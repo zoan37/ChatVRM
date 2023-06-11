@@ -88,6 +88,11 @@ export const MessageInputContainer = ({
       userMessage={userMessage}
       isChatProcessing={isChatProcessing}
       isMicRecording={isMicRecording}
+      onKeyDownUserMessage={(e) => {
+        if (e.key === "Enter") {
+          handleClickSendButton();
+        }
+      }}
       onChangeUserMessage={(e) => setUserMessage(e.target.value)}
       onClickMicButton={handleClickMicButton}
       onClickSendButton={handleClickSendButton}

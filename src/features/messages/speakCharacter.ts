@@ -21,7 +21,9 @@ const createSpeakCharacter = () => {
         await wait(1000 - (now - lastTime));
       }
 
-      const buffer = await fetchAudio(screenplay.talk).catch(() => null);
+      // TODO: replace with English speech API
+      const buffer = null;
+      // const buffer = await fetchAudio(screenplay.talk).catch(() => null);
       lastTime = Date.now();
       return buffer;
     });
