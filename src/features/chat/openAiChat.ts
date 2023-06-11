@@ -35,9 +35,12 @@ export async function getChatResponseStream(
   messages: Message[],
   apiKey: string
 ) {
+  // TODO: remove usages of apiKey in code
+  /*
   if (!apiKey) {
     throw new Error("Invalid API Key");
   }
+  */
 
   console.log('getChatResponseStream');
 
@@ -47,7 +50,13 @@ export async function getChatResponseStream(
   const stream = new ReadableStream({
     async start(controller: ReadableStreamDefaultController) {
       try {
-        const ai = await getWindowAI()
+        let ai;
+        try {
+          ai = await getWindowAI()
+        } catch (error) {
+          alert('window.ai not found. Please install at https://windowai.io/');
+          return;
+        }
 
         const response = await ai.generateText(
           {

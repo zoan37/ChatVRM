@@ -89,10 +89,13 @@ export default function Home() {
    */
   const handleSendChat = useCallback(
     async (text: string) => {
+      // TODO: remove usages of openAiKey in code
+      /*
       if (!openAiKey) {
         setAssistantMessage("APIキーが入力されていません");
         return;
       }
+      */
 
       const newMessage = text;
 
@@ -137,6 +140,9 @@ export default function Home() {
           if (done) break;
 
           receivedMessage += value;
+
+          console.log('receivedMessage');
+          console.log(receivedMessage);
 
           // 返答内容のタグ部分の検出
           const tagMatch = receivedMessage.match(/^\[(.*?)\]/);
