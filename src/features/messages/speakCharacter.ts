@@ -32,7 +32,8 @@ const createSpeakCharacter = () => {
     prevSpeakPromise = Promise.all([fetchPromise, prevSpeakPromise]).then(([audioBuffer]) => {
       onStart?.();
       if (!audioBuffer) {
-        return;
+        // pass along screenplay to change avatar expression
+        return viewer.model?.speak(null, screenplay);
       }
       return viewer.model?.speak(audioBuffer, screenplay);
     });

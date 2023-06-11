@@ -18,6 +18,8 @@ export class Model {
   private _lookAtTargetParent: THREE.Object3D;
   private _lipSync?: LipSync;
 
+  private prevPlayedEmotion: string | null = null;
+
   constructor(lookAtTargetParent: THREE.Object3D) {
     this._lookAtTargetParent = lookAtTargetParent;
     this._lipSync = new LipSync(new AudioContext());
@@ -69,8 +71,17 @@ export class Model {
   /**
    * 音声を再生し、リップシンクを行う
    */
-  public async speak(buffer: ArrayBuffer, screenplay: Screenplay) {
-    this.emoteController?.playEmotion(screenplay.expression);
+  public async speak(buffer: ArrayBuffer | null, screenplay: Screenplay) {
+    // prevent flickering of avatar expression
+    if (this.prevPlayedEmotion !== screenplay.expression) {
+      this.emoteController?.playEmotion(screenplay.expression);
+      this.prevPlayedEmotion = screenplay.expression;
+    }
+
+    if (!buffer) {
+      return;
+    }
+
     await new Promise((resolve) => {
       this._lipSync?.playFromArrayBuffer(buffer, () => {
         resolve(true);
