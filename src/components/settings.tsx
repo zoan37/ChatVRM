@@ -52,30 +52,6 @@ export const Settings = ({
         <div className="text-text1 max-w-3xl mx-auto px-24 py-64 ">
           <div className="my-24 typography-32 font-bold">設定</div>
           <div className="my-24">
-            <div className="my-16 typography-20 font-bold">OpenAI API キー</div>
-            <input
-              className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8"
-              type="text"
-              placeholder="sk-..."
-              value={openAiKey}
-              onChange={onChangeAiKey}
-            />
-            <div>
-              APIキーは
-              <Link
-                url="https://platform.openai.com/account/api-keys"
-                label="OpenAIのサイト"
-              />
-              で取得できます。取得したAPIキーをフォームに入力してください。
-            </div>
-            <div className="my-16">
-              入力されたAPIキーで、ブラウザから直接OpenAIのAPIを利用しますので、サーバー等には保存されません。
-              なお、利用しているモデルはGPT-3です。
-              <br />
-              ※APIキーや会話文はピクシブのサーバーに送信されません。
-            </div>
-          </div>
-          <div className="my-40">
             <div className="my-16 typography-20 font-bold">
               キャラクターモデル
             </div>

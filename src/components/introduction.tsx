@@ -39,9 +39,9 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
             、 会話文生成には
             <Link
               url={
-                "https://openai.com/blog/introducing-chatgpt-and-whisper-apis"
+                "https://windowai.io/"
               }
-              label={"ChatGPT API"}
+              label={"Window AI"}
             />
             音声合成には
             <Link url={"http://koeiromap.rinna.jp/"} label={"Koeiro API"} />
@@ -57,8 +57,8 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
             <br />
             リポジトリ：
             <Link
-              url={"https://github.com/pixiv/ChatVRM"}
-              label={"https://github.com/pixiv/ChatVRM"}
+              url={"https://github.com/zoan37/ChatVRM-jp"}
+              label={"https://github.com/zoan37/ChatVRM-jp"}
             />
           </div>
         </div>
@@ -73,28 +73,15 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
         </div>
         <div className="my-24">
           <div className="my-8 font-bold typography-20 text-secondary">
-            OpenAI APIキー
+            Window AI
           </div>
-          <input
-            type="text"
-            placeholder="sk-..."
-            value={openAiKey}
-            onChange={handleAiKeyChange}
-            className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
-          ></input>
           <div>
-            APIキーは
+            AI を実行するには、
             <Link
-              url="https://platform.openai.com/account/api-keys"
-              label="OpenAIのサイト"
+              url="https://windowai.io/"
+              label="Window AI"
             />
-            で取得できます。取得したAPIキーをフォームに入力してください。
-          </div>
-          <div className="my-16">
-            入力されたAPIキーで、ブラウザから直接OpenAIのAPIを利用しますので、サーバー等には保存されません。
-            なお、利用しているモデルはGPT-3です。
-            <br />
-            ※APIキーや会話文はピクシブのサーバーに送信されません。
+            ブラウザ拡張機能をインストールしてください。
           </div>
         </div>
         <div className="my-24">
@@ -104,7 +91,7 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
             }}
             className="font-bold bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled text-white px-24 py-8 rounded-oval"
           >
-            APIキーを入力してはじめる
+            Start 始める
           </button>
         </div>
       </div>
