@@ -22,8 +22,7 @@ ChatVRMの各機能は主に以下の技術を使用しています。
 
 Vercelでデモを公開しています。
 
-TODO: add vercel app link
-[https://pixiv.github.io/ChatVRM](https://pixiv.github.io/ChatVRM)
+[https://chat-vrm-jp.vercel.app/](https://chat-vrm-jp.vercel.app/)
 
 
 ## 実行
