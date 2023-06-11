@@ -1,5 +1,3 @@
-import { Configuration, OpenAIApi } from "openai";
-
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
@@ -10,6 +8,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  // function currently not used
+  throw new Error("Not implemented");
+
+  /*
   const apiKey = req.body.apiKey || process.env.OPEN_AI_KEY;
 
   if (!apiKey) {
@@ -35,4 +37,5 @@ export default async function handler(
   const message = aiRes.message?.content || "エラーが発生しました";
 
   res.status(200).json({ message: message });
+  */
 }
