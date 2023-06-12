@@ -45,42 +45,7 @@ export async function synthesizeVoice(
 
   return {
     audio: url
-  }
-  /*
-
-  const param = {
-    method: "POST",
-    body: JSON.stringify({
-      text: message,
-      model_id: "eleven_monolingual_v1"
-    }),
-    headers: {
-      "accept": "audio/mpeg",
-      "Content-type": "application/json; charset=UTF-8",
-      "xi-api-key": ""
-    },
   };
-
-  const voice_id = "MF3mGyEYCl7XYWbV9V6O";
-
-  console.log('elevenlabs voice_id');
-  console.log(voice_id);
-
-  console.log('elevenlabs param');
-  console.log(param);
-
-  const res = await fetch(
-    "https://api.elevenlabs.io/v1/text-to-speech/" + voice_id,
-    param
-  );
-
-  console.log('elevenlabs res');
-  console.log(res);
-
-  const data = (await res.json()) as any;
-
-  return { audio: data.audio };
-  */
 }
 
 export async function getVoices() {

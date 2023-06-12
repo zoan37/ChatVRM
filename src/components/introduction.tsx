@@ -19,7 +19,6 @@ export const Introduction = ({ openAiKey, elevenLabsKey, onChangeAiKey, onChange
 
   const handleElevenLabsKeyChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      console.log('handleElevenLabsKeyChange: ' + event.target.value);
       onChangeElevenLabsKey(event.target.value);
     },
     [onChangeElevenLabsKey]
