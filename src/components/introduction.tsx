@@ -71,7 +71,7 @@ export const Introduction = ({ openAiKey, elevenLabsKey, onChangeAiKey, onChange
             Precautions for use
           </div>
           <div>
-            Do not intentionally induce discriminatory or violent remarks, or remarks that demean a specific person. Also, when replacing characters using a VRM model, please follow the model's terms of use.
+            Do not intentionally induce discriminatory or violent remarks, or remarks that demean a specific person. Also, when replacing characters using a VRM model, please follow the model&apos;s terms of use.
           </div>
         </div>
         <div className="my-24">

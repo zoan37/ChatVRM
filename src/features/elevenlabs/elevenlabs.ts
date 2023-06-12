@@ -35,6 +35,7 @@ export async function synthesizeVoice(
   };
 
   // Send the API request using Axios and wait for the response.
+  // @ts-ignore
   const speechDetails = await axios.request(options);
   // Get the binary audio data received from the API response.
   const data =  speechDetails.data;
