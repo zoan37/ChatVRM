@@ -3,6 +3,7 @@ import { synthesizeVoice } from "../elevenlabs/elevenlabs";
 import { Viewer } from "../vrmViewer/viewer";
 import { Screenplay } from "./messages";
 import { Talk } from "./messages";
+import { ElevenLabsParam } from "../constants/elevenLabsParam";
 
 const createSpeakCharacter = () => {
   let lastTime = 0;
@@ -12,6 +13,7 @@ const createSpeakCharacter = () => {
   return (
     screenplay: Screenplay,
     elevenLabsKey: string,
+    elevenLabsParam: ElevenLabsParam,
     viewer: Viewer,
     onStart?: () => void,
     onComplete?: () => void
@@ -24,10 +26,11 @@ const createSpeakCharacter = () => {
 
       // if elevenLabsKey is not set, do not fetch audio
       if (!elevenLabsKey || elevenLabsKey.trim() == "") {
+        console.log("elevenLabsKey is not set");
         return null;
       }
 
-      const buffer = await fetchAudio(screenplay.talk, elevenLabsKey).catch(() => null);
+      const buffer = await fetchAudio(screenplay.talk, elevenLabsKey, elevenLabsParam).catch(() => null);
       lastTime = Date.now();
       return buffer;
     });
@@ -37,9 +40,9 @@ const createSpeakCharacter = () => {
       onStart?.();
       if (!audioBuffer) {
         // pass along screenplay to change avatar expression
-        return viewer.model?.speak(null, screenplay, elevenLabsKey);
+        return viewer.model?.speak(null, screenplay);
       }
-      return viewer.model?.speak(audioBuffer, screenplay, elevenLabsKey);
+      return viewer.model?.speak(audioBuffer, screenplay);
     });
     prevSpeakPromise.then(() => {
       onComplete?.();
@@ -49,13 +52,18 @@ const createSpeakCharacter = () => {
 
 export const speakCharacter = createSpeakCharacter();
 
-export const fetchAudio = async (talk: Talk, elevenLabsKey: string): Promise<ArrayBuffer> => {
+export const fetchAudio = async (
+  talk: Talk, 
+  elevenLabsKey: string,
+  elevenLabsParam: ElevenLabsParam,
+  ): Promise<ArrayBuffer> => {
   const ttsVoice = await synthesizeVoice(
     talk.message,
     talk.speakerX,
     talk.speakerY,
     talk.style,
-    elevenLabsKey
+    elevenLabsKey,
+    elevenLabsParam
   );
   const url = ttsVoice.audio;
 

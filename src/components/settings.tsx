@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, cache } from "react";
 import { IconButton } from "./iconButton";
 import { TextButton } from "./textButton";
 import { Message } from "@/features/messages/messages";
@@ -11,16 +11,19 @@ import {
 } from "@/features/constants/koeiroParam";
 import { Link } from "./link";
 import { getVoices } from "@/features/elevenlabs/elevenlabs";
+import { ElevenLabsParam } from "@/features/constants/elevenLabsParam";
 
 type Props = {
   openAiKey: string;
   elevenLabsKey: string;
   systemPrompt: string;
   chatLog: Message[];
+  elevenLabsParam: ElevenLabsParam;
   koeiroParam: KoeiroParam;
   onClickClose: () => void;
   onChangeAiKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeElevenLabsKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeElevenLabsVoice: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   onChangeSystemPrompt: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onChangeChatLog: (index: number, text: string) => void;
   onChangeKoeiroParam: (x: number, y: number) => void;
@@ -33,11 +36,13 @@ export const Settings = ({
   elevenLabsKey,
   chatLog,
   systemPrompt,
+  elevenLabsParam,
   koeiroParam,
   onClickClose,
   onChangeSystemPrompt,
   onChangeAiKey,
   onChangeElevenLabsKey,
+  onChangeElevenLabsVoice,
   onChangeChatLog,
   onChangeKoeiroParam,
   onClickOpenVrmFile,
@@ -48,13 +53,16 @@ export const Settings = ({
   const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
 
   useEffect(() => {
-    getVoices().then((data) => {
-      console.log('getVoices');
-      console.log(data);
-
-      const voices = data.voices;
-      setElevenLabsVoices(voices);
-    });
+    // if statement to prevent spamming ElevenLabs API
+    if (elevenLabsVoices.length == 0) {
+      getVoices().then((data) => {
+        console.log('getVoices');
+        console.log(data);
+  
+        const voices = data.voices;
+        setElevenLabsVoices(voices);
+      });
+    }
   });
 
   return (
@@ -99,7 +107,8 @@ export const Settings = ({
             <div className="my-8">
               <select className="h-40 px-8"
                 id="select-dropdown"
-                onChange={(e) => console.log(e.target.value)}
+                onChange={onChangeElevenLabsVoice}
+                value={elevenLabsParam.voiceId}
               >
                 {elevenLabsVoices.map((voice, index) => (
                   <option key={index} value={voice.voice_id}>

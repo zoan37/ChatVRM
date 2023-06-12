@@ -1,3 +1,4 @@
+import { ElevenLabsParam } from "../constants/elevenLabsParam";
 import { TalkStyle } from "../messages/messages";
 import axios from 'axios';
 
@@ -6,14 +7,17 @@ export async function synthesizeVoice(
   speaker_x: number,
   speaker_y: number,
   style: TalkStyle,
-  elevenLabsKey: string
+  elevenLabsKey: string,
+  elevenLabsParam: ElevenLabsParam
 ) {
 
   // Set the API key for ElevenLabs API. 
   // Do not use directly. Use environment variables.
   const API_KEY = elevenLabsKey;
   // Set the ID of the voice to be used.
-  const VOICE_ID = 'MF3mGyEYCl7XYWbV9V6O';
+  const VOICE_ID = elevenLabsParam.voiceId;
+
+  console.log('elevenlabs voice_id: ' + VOICE_ID);
 
   // Set options for the API request.
   const options = {
