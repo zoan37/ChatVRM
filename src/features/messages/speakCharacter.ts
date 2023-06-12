@@ -1,8 +1,9 @@
 import { wait } from "@/utils/wait";
-import { synthesizeVoice } from "../koeiromap/koeiromap";
+import { synthesizeVoice } from "../elevenlabs/elevenlabs";
 import { Viewer } from "../vrmViewer/viewer";
 import { Screenplay } from "./messages";
 import { Talk } from "./messages";
+import { ElevenLabsParam } from "../constants/elevenLabsParam";
 
 const createSpeakCharacter = () => {
   let lastTime = 0;
@@ -11,6 +12,8 @@ const createSpeakCharacter = () => {
 
   return (
     screenplay: Screenplay,
+    elevenLabsKey: string,
+    elevenLabsParam: ElevenLabsParam,
     viewer: Viewer,
     onStart?: () => void,
     onComplete?: () => void
@@ -21,9 +24,13 @@ const createSpeakCharacter = () => {
         await wait(1000 - (now - lastTime));
       }
 
-      // TODO: replace with English speech API
-      const buffer = null;
-      // const buffer = await fetchAudio(screenplay.talk).catch(() => null);
+      // if elevenLabsKey is not set, do not fetch audio
+      if (!elevenLabsKey || elevenLabsKey.trim() == "") {
+        console.log("elevenLabsKey is not set");
+        return null;
+      }
+
+      const buffer = await fetchAudio(screenplay.talk, elevenLabsKey, elevenLabsParam).catch(() => null);
       lastTime = Date.now();
       return buffer;
     });
@@ -45,12 +52,18 @@ const createSpeakCharacter = () => {
 
 export const speakCharacter = createSpeakCharacter();
 
-export const fetchAudio = async (talk: Talk): Promise<ArrayBuffer> => {
+export const fetchAudio = async (
+  talk: Talk, 
+  elevenLabsKey: string,
+  elevenLabsParam: ElevenLabsParam,
+  ): Promise<ArrayBuffer> => {
   const ttsVoice = await synthesizeVoice(
     talk.message,
     talk.speakerX,
     talk.speakerY,
-    talk.style
+    talk.style,
+    elevenLabsKey,
+    elevenLabsParam
   );
   const url = ttsVoice.audio;
 

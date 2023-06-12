@@ -1,48 +1,48 @@
 # ChatVRM
 
-[This repo is a fork of pixiv's ChatVRM that uses [Window AI](https://windowai.io/) to run AI on the web.]
+[This repo was cloned from [ChatVRM-jp](https://github.com/zoan37/ChatVRM-jp), which is a fork of [@pixiv/ChatVRM](https://github.com/pixiv/ChatVRM).]
 
-ChatVRMはブラウザで簡単に3Dキャラクターと会話ができるデモアプリケーションです。
+ChatVRM is a demo application that allows you to easily talk with a 3D character in your browser.
 
-VRMファイルをインポートしてキャラクターに合わせた声の調整や、感情表現を含んだ返答文の生成などを行うことができます。
+By importing VRM files, you can adjust the voice to match the character, and generate responses that include emotional expressions.
 
-ChatVRMの各機能は主に以下の技術を使用しています。
+ChatVRM mainly uses the following technologies.
 
-- 返答文の生成
+- Generate response text
     - [Window AI](https://windowai.io/)
-- ユーザーの音声の認識
-    - [Web Speech API(SpeechRecognition)](https://developer.mozilla.org/ja/docs/Web/API/SpeechRecognition)
-- 読み上げ音声の生成
-    - [Koeiro API](http://koeiromap.rinna.jp/)
-- 3Dキャラクターの表示
+- User speech recognition
+    - [Web Speech API (SpeechRecognition)](https://developer.mozilla.org/ja/docs/Web/API/SpeechRecognition)
+- Text to speech
+    - [ElevenLabs](https://beta.elevenlabs.io/)
+- Displaying 3D characters
     - [@pixiv/three-vrm](https://github.com/pixiv/three-vrm)
 
 
-## デモ
+## Demo
 
-Vercelでデモを公開しています。
+A demo is available at Vercel.
 
-[https://chat-vrm-jp.vercel.app/](https://chat-vrm-jp.vercel.app/)
+[https://chat-vrm.vercel.app/](https://chat-vrm.vercel.app/)
 
 
-## 実行
-ローカル環境で実行する場合はこのリポジトリをクローンするか、ダウンロードしてください。
+## Execution
+Clone or download this repository to run locally.
 
 ```bash
-git clone https://github.com/zoan37/ChatVRM-jp.git
+git clone https://github.com/zoan37/ChatVRM.git
 ```
 
-必要なパッケージをインストールしてください。
+Please install the required packages.
 ```bash
 npm install
 ```
 
-パッケージのインストールが完了した後、以下のコマンドで開発用のWebサーバーを起動します。
+After package installation is complete, start the development web server with the following command.
 ```bash
 npm run dev
 ```
 
-実行後、以下のURLにアクセスして動作を確認して下さい。
+After execution, access the following URL.
 
 [http://localhost:3000](http://localhost:3000) 
 
@@ -51,16 +51,12 @@ npm run dev
 
 ## Window AI
 
-ChatVRMでは返答文の生成にWindow AIを使用しています。
-
-Window AIの仕様や利用規約については以下のリンクや公式サイトをご確認ください。
+ChatVRM uses Window AI to generate responses.
 
 - [https://windowai.io/](https://windowai.io/)
 
 
-## Koeiro API
-ChatVRMでは返答文の音声読み上げにKoeiro APIを使用しています。
+## ElevenLabs
+ChatVRM uses ElevenLabs API to do text to speech.
 
-Koeiro APIの仕様や利用規約については以下のリンクや公式サイトをご確認ください。
-
-- [http://koeiromap.rinna.jp/](http://koeiromap.rinna.jp/)
+- [https://beta.elevenlabs.io/](https://beta.elevenlabs.io/)

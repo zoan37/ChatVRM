@@ -1,5 +1,6 @@
 import { IconButton } from "./iconButton";
 import { Message } from "@/features/messages/messages";
+import { ElevenLabsParam } from "@/features/constants/elevenLabsParam";
 import { KoeiroParam } from "@/features/constants/koeiroParam";
 import { ChatLog } from "./chatLog";
 import React, { useCallback, useContext, useRef, useState } from "react";
@@ -9,26 +10,34 @@ import { AssistantText } from "./assistantText";
 
 type Props = {
   openAiKey: string;
+  elevenLabsKey: string;
   systemPrompt: string;
   chatLog: Message[];
+  elevenLabsParam: ElevenLabsParam;
   koeiroParam: KoeiroParam;
   assistantMessage: string;
   onChangeSystemPrompt: (systemPrompt: string) => void;
   onChangeAiKey: (key: string) => void;
+  onChangeElevenLabsKey: (key: string) => void;
   onChangeChatLog: (index: number, text: string) => void;
+  onChangeElevenLabsParam: (param: ElevenLabsParam) => void;
   onChangeKoeiromapParam: (param: KoeiroParam) => void;
   handleClickResetChatLog: () => void;
   handleClickResetSystemPrompt: () => void;
 };
 export const Menu = ({
   openAiKey,
+  elevenLabsKey,
   systemPrompt,
   chatLog,
+  elevenLabsParam,
   koeiroParam,
   assistantMessage,
   onChangeSystemPrompt,
   onChangeAiKey,
+  onChangeElevenLabsKey,
   onChangeChatLog,
+  onChangeElevenLabsParam,
   onChangeKoeiromapParam,
   handleClickResetChatLog,
   handleClickResetSystemPrompt,
@@ -50,6 +59,22 @@ export const Menu = ({
       onChangeAiKey(event.target.value);
     },
     [onChangeAiKey]
+  );
+
+  const handleElevenLabsKeyChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onChangeElevenLabsKey(event.target.value);
+    },
+    [onChangeElevenLabsKey]
+  );
+
+  const handleElevenLabsVoiceChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      onChangeElevenLabsParam({
+        voiceId: event.target.value
+      });
+    },
+    [onChangeElevenLabsParam]
   );
 
   const handleChangeKoeiroParam = useCallback(
@@ -93,21 +118,21 @@ export const Menu = ({
         <div className="grid grid-flow-col gap-[8px]">
           <IconButton
             iconName="24/Menu"
-            label="設定"
+            label="Settings"
             isProcessing={false}
             onClick={() => setShowSettings(true)}
           ></IconButton>
           {showChatLog ? (
             <IconButton
               iconName="24/CommentOutline"
-              label="会話ログ"
+              label="Conversation Log"
               isProcessing={false}
               onClick={() => setShowChatLog(false)}
             />
           ) : (
             <IconButton
               iconName="24/CommentFill"
-              label="会話ログ"
+              label="Conversation Log"
               isProcessing={false}
               disabled={chatLog.length <= 0}
               onClick={() => setShowChatLog(true)}
@@ -119,11 +144,15 @@ export const Menu = ({
       {showSettings && (
         <Settings
           openAiKey={openAiKey}
+          elevenLabsKey={elevenLabsKey}
+          elevenLabsParam={elevenLabsParam}
           chatLog={chatLog}
           systemPrompt={systemPrompt}
           koeiroParam={koeiroParam}
           onClickClose={() => setShowSettings(false)}
           onChangeAiKey={handleAiKeyChange}
+          onChangeElevenLabsKey={handleElevenLabsKeyChange}
+          onChangeElevenLabsVoice={handleElevenLabsVoiceChange}
           onChangeSystemPrompt={handleChangeSystemPrompt}
           onChangeChatLog={onChangeChatLog}
           onChangeKoeiroParam={handleChangeKoeiroParam}

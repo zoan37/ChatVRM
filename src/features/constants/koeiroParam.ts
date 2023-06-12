@@ -3,7 +3,7 @@ export type KoeiroParam = {
   speakerY: number;
 };
 
-export const DEFAULT_PARAM: KoeiroParam = {
+export const DEFAULT_KOEIRO_PARAM: KoeiroParam = {
   speakerX: 1.32,
   speakerY: 1.88,
 } as const;

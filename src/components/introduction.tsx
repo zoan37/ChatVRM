@@ -3,9 +3,11 @@ import { Link } from "./link";
 
 type Props = {
   openAiKey: string;
+  elevenLabsKey: string;
   onChangeAiKey: (openAiKey: string) => void;
+  onChangeElevenLabsKey: (elevenLabsKey: string) => void;
 };
-export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
+export const Introduction = ({ openAiKey, elevenLabsKey, onChangeAiKey, onChangeElevenLabsKey }: Props) => {
   const [opened, setOpened] = useState(true);
 
   const handleAiKeyChange = useCallback(
@@ -15,60 +17,61 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
     [onChangeAiKey]
   );
 
+  const handleElevenLabsKeyChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onChangeElevenLabsKey(event.target.value);
+    },
+    [onChangeElevenLabsKey]
+  );
+
   return opened ? (
     <div className="absolute z-40 w-full h-full px-24 py-40  bg-black/30 font-M_PLUS_2">
       <div className="mx-auto my-auto max-w-3xl max-h-full p-24 overflow-auto bg-white rounded-16">
         <div className="my-24">
           <div className="my-8 font-bold typography-20 text-secondary ">
-            このアプリケーションについて
+            About ChatVRM
           </div>
           <div>
-            Webブラウザだけで3Dキャラクターとの会話を、マイクやテキスト入力、音声合成を用いて楽しめます。キャラクター（VRM）の変更や性格設定、音声調整もできます。
+            You can enjoy conversations with 3D characters using only a web browser using a microphone, text input, and speech synthesis. You can also change the character (VRM), set the personality, and adjust the voice.
           </div>
         </div>
         <div className="my-24">
           <div className="my-8 font-bold typography-20 text-secondary">
-            技術紹介
+            Technology
           </div>
           <div>
-            3Dモデルの表示や操作には
             <Link
               url={"https://github.com/pixiv/three-vrm"}
               label={"@pixiv/three-vrm"}
-            />
-            、 会話文生成には
-            <Link
+            />&nbsp;
+            is used for displaying and manipulating 3D models,
+            &nbsp;<Link
               url={
                 "https://windowai.io/"
               }
               label={"Window AI"}
-            />
-            音声合成には
-            <Link url={"http://koeiromap.rinna.jp/"} label={"Koeiro API"} />
-            を使用しています。 詳細はこちらの
-            <Link
-              url={"https://inside.pixiv.blog/2023/04/28/160000"}
-              label={"技術解説記事"}
-            />
-            をご覧ください。
+            />&nbsp;
+            is used for running AI chat models on the web, and 
+            &nbsp;<Link url={"https://beta.elevenlabs.io/"} label={"ElevenLabs"} />&nbsp;
+            is used for text to speech.
           </div>
           <div className="my-16">
-            このデモはGitHubでソースコードを公開しています。自由に変更や改変をお試しください！
+            The source code for this demo is available on GitHub. Feel free to experiment with changes and modifications!
             <br />
-            リポジトリ：
-            <Link
-              url={"https://github.com/zoan37/ChatVRM-jp"}
-              label={"https://github.com/zoan37/ChatVRM-jp"}
+            Repository:
+            &nbsp;<Link
+              url={"https://github.com/zoan37/ChatVRM"}
+              label={"https://github.com/zoan37/ChatVRM"}
             />
           </div>
         </div>
 
         <div className="my-24">
           <div className="my-8 font-bold typography-20 text-secondary">
-            利用上の注意
+            Precautions for use
           </div>
           <div>
-            差別的または暴力的な発言、特定の人物を貶めるような発言を、意図的に誘導しないでください。また、VRMモデルを使ってキャラクターを差し替える際はモデルの利用条件に従ってください。
+            Do not intentionally induce discriminatory or violent remarks, or remarks that demean a specific person. Also, when replacing characters using a VRM model, please follow the model's terms of use.
           </div>
         </div>
         <div className="my-24">
@@ -76,12 +79,34 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
             Window AI
           </div>
           <div>
-            AI を実行するには、
+            Install the&nbsp;
             <Link
               url="https://windowai.io/"
               label="Window AI"
             />
-            ブラウザ拡張機能をインストールしてください。
+            &nbsp;browser extension to run AI chat models.
+          </div>
+        </div>
+        <div className="my-24">
+          <div className="my-8 font-bold typography-20 text-secondary">
+            ElevenLabs API
+          </div>
+          <input
+            type="text"
+            placeholder="ElevenLabs API key"
+            value={elevenLabsKey}
+            onChange={handleElevenLabsKeyChange}
+            className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
+          ></input>
+          <div>
+            Enter your ElevenLabs API key to enable text to speech. You can get an API key at the&nbsp;
+            <Link
+              url="https://beta.elevenlabs.io/"
+              label="ElevenLabs website"
+            />.
+          </div>
+          <div className="my-16">
+          The entered API key will be used directly from the browser to call the ElevenLabs API, so it will not be saved on the server.
           </div>
         </div>
         <div className="my-24">
@@ -91,7 +116,7 @@ export const Introduction = ({ openAiKey, onChangeAiKey }: Props) => {
             }}
             className="font-bold bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled text-white px-24 py-8 rounded-oval"
           >
-            Start 始める
+            Start
           </button>
         </div>
       </div>
