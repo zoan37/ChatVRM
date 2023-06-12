@@ -22,7 +22,7 @@ ChatVRM mainly uses the following technologies.
 
 A demo is available at Vercel.
 
-[https://chat-vrm.vercel.app/](https://chat-vrm.vercel.app/)
+[https://chat-vrm-window.vercel.app/](https://chat-vrm-window.vercel.app/)
 
 
 ## Execution
