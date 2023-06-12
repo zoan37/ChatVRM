@@ -80,6 +80,8 @@ export default function Home() {
       onEnd?: () => void
     ) => {
       speakCharacter(screenplay, viewer, onStart, onEnd);
+
+      console.log('speak character');
     },
     [viewer]
   );
@@ -149,15 +151,22 @@ export default function Home() {
           if (tagMatch && tagMatch[0]) {
             tag = tagMatch[0];
             receivedMessage = receivedMessage.slice(tag.length);
+
+            console.log('tag:');
+            console.log(tag);
           }
 
           // 返答を一文単位で切り出して処理する
           const sentenceMatch = receivedMessage.match(
-            /^(.+[。．！？\n]|.{10,}[、,])/
+            /^(.+[。．！？\n.!?]|.{10,}[、,])/
           );
           if (sentenceMatch && sentenceMatch[0]) {
             const sentence = sentenceMatch[0];
             sentences.push(sentence);
+
+            console.log('sentence:');
+            console.log(sentence);
+
             receivedMessage = receivedMessage
               .slice(sentence.length)
               .trimStart();

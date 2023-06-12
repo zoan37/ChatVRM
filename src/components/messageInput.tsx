@@ -7,6 +7,7 @@ type Props = {
   onChangeUserMessage: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  onKeyDownUserMessage: (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onClickSendButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onClickMicButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
 };
@@ -15,6 +16,7 @@ export const MessageInput = ({
   isMicRecording,
   isChatProcessing,
   onChangeUserMessage,
+  onKeyDownUserMessage,
   onClickMicButton,
   onClickSendButton,
 }: Props) => {
@@ -34,6 +36,7 @@ export const MessageInput = ({
               type="text"
               placeholder="聞きたいことをいれてね"
               onChange={onChangeUserMessage}
+              onKeyDown={onKeyDownUserMessage}
               disabled={isChatProcessing}
               className="bg-surface1 hover:bg-surface1-hover focus:bg-surface1 disabled:bg-surface1-disabled disabled:text-primary-disabled rounded-16 w-full px-16 text-text-primary typography-16 font-M_PLUS_2 font-bold disabled"
               value={userMessage}
