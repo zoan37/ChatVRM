@@ -13,11 +13,13 @@ import { Link } from "./link";
 
 type Props = {
   openAiKey: string;
+  elevenLabsKey: string;
   systemPrompt: string;
   chatLog: Message[];
   koeiroParam: KoeiroParam;
   onClickClose: () => void;
   onChangeAiKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeElevenLabsKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeSystemPrompt: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onChangeChatLog: (index: number, text: string) => void;
   onChangeKoeiroParam: (x: number, y: number) => void;
@@ -27,12 +29,14 @@ type Props = {
 };
 export const Settings = ({
   openAiKey,
+  elevenLabsKey,
   chatLog,
   systemPrompt,
   koeiroParam,
   onClickClose,
   onChangeSystemPrompt,
   onChangeAiKey,
+  onChangeElevenLabsKey,
   onChangeChatLog,
   onChangeKoeiroParam,
   onClickOpenVrmFile,
@@ -50,22 +54,42 @@ export const Settings = ({
       </div>
       <div className="max-h-full overflow-auto">
         <div className="text-text1 max-w-3xl mx-auto px-24 py-64 ">
-          <div className="my-24 typography-32 font-bold">設定</div>
+          <div className="my-24 typography-32 font-bold">Settings</div>
           <div className="my-24">
+            <div className="my-16 typography-20 font-bold">Eleven Labs API</div>
+            <input
+              type="text"
+              placeholder="ElevenLabs API key"
+              value={elevenLabsKey}
+              onChange={onChangeElevenLabsKey}
+              className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
+            ></input>
+            <div>
+              Enter your ElevenLabs API key to enable text to speech. You can get an API key at the&nbsp;
+              <Link
+                url="https://beta.elevenlabs.io/"
+                label="ElevenLabs website"
+              />.
+            </div>
+            <div className="my-16">
+              The entered API key will be used directly from the browser to call the ElevenLabs API, so it will not be saved on the server.
+            </div>
+          </div>
+          <div className="my-40">
             <div className="my-16 typography-20 font-bold">
-              キャラクターモデル
+              Character Model
             </div>
             <div className="my-8">
-              <TextButton onClick={onClickOpenVrmFile}>VRMを開く</TextButton>
+              <TextButton onClick={onClickOpenVrmFile}>Open VRM</TextButton>
             </div>
           </div>
           <div className="my-40">
             <div className="my-8">
               <div className="my-16 typography-20 font-bold">
-                キャラクター設定（システムプロンプト）
+                Character Settings (System Prompt)
               </div>
               <TextButton onClick={onClickResetSystemPrompt}>
-                キャラクター設定リセット
+                Reset character settings
               </TextButton>
             </div>
 
@@ -156,9 +180,9 @@ export const Settings = ({
           {chatLog.length > 0 && (
             <div className="my-40">
               <div className="my-8 grid-cols-2">
-                <div className="my-16 typography-20 font-bold">会話履歴</div>
+                <div className="my-16 typography-20 font-bold">Conversation History</div>
                 <TextButton onClick={onClickResetChatLog}>
-                  会話履歴リセット
+                  Reset conversation history
                 </TextButton>
               </div>
               <div className="my-8">

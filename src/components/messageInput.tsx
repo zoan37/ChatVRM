@@ -34,7 +34,7 @@ export const MessageInput = ({
             />
             <input
               type="text"
-              placeholder="聞きたいことをいれてね"
+              placeholder="Message"
               onChange={onChangeUserMessage}
               onKeyDown={onKeyDownUserMessage}
               disabled={isChatProcessing}
@@ -55,8 +55,13 @@ export const MessageInput = ({
           powered by&nbsp;
           <a target="_blank" href="https://windowai.io/" className="underline">
             Window AI
-          </a>,
-          VRoid, Koeiro API
+          </a>,&nbsp;
+          <a target="_blank" href="https://beta.elevenlabs.io/" className="underline">
+            ElevenLabs
+          </a>,&nbsp;
+          <a target="_blank" href="https://vroid.com/" className="underline">
+            VRoid
+          </a>
         </div>
       </div>
     </div>

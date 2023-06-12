@@ -34,6 +34,7 @@ export default function Home() {
 
   const [systemPrompt, setSystemPrompt] = useState(SYSTEM_PROMPT);
   const [openAiKey, setOpenAiKey] = useState("");
+  const [elevenLabsKey, setElevenLabsKey] = useState("");
   const [koeiroParam, setKoeiroParam] = useState<KoeiroParam>(DEFAULT_PARAM);
   const [chatProcessing, setChatProcessing] = useState(false);
   const [chatLog, setChatLog] = useState<Message[]>([]);
@@ -76,10 +77,11 @@ export default function Home() {
   const handleSpeakAi = useCallback(
     async (
       screenplay: Screenplay,
+      elevenLabsKey: string,
       onStart?: () => void,
       onEnd?: () => void
     ) => {
-      speakCharacter(screenplay, viewer, onStart, onEnd);
+      speakCharacter(screenplay, elevenLabsKey, viewer, onStart, onEnd);
 
       console.log('speak character');
     },
@@ -187,7 +189,7 @@ export default function Home() {
 
             // 文ごとに音声を生成 & 再生、返答を表示
             const currentAssistantMessage = sentences.join(" ");
-            handleSpeakAi(aiTalks[0], () => {
+            handleSpeakAi(aiTalks[0], elevenLabsKey, () => {
               setAssistantMessage(currentAssistantMessage);
             });
           }
@@ -208,13 +210,18 @@ export default function Home() {
       setChatLog(messageLogAssistant);
       setChatProcessing(false);
     },
-    [systemPrompt, chatLog, handleSpeakAi, openAiKey, koeiroParam]
+    [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, koeiroParam]
   );
 
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>
       <Meta />
-      <Introduction openAiKey={openAiKey} onChangeAiKey={setOpenAiKey} />
+      <Introduction
+        openAiKey={openAiKey}
+        onChangeAiKey={setOpenAiKey}
+        elevenLabsKey={elevenLabsKey}
+        onChangeElevenLabsKey={setElevenLabsKey}
+      />
       <VrmViewer />
       <MessageInputContainer
         isChatProcessing={chatProcessing}
@@ -222,11 +229,13 @@ export default function Home() {
       />
       <Menu
         openAiKey={openAiKey}
+        elevenLabsKey={elevenLabsKey}
         systemPrompt={systemPrompt}
         chatLog={chatLog}
         koeiroParam={koeiroParam}
         assistantMessage={assistantMessage}
         onChangeAiKey={setOpenAiKey}
+        onChangeElevenLabsKey={setElevenLabsKey}
         onChangeSystemPrompt={setSystemPrompt}
         onChangeChatLog={handleChangeChatLog}
         onChangeKoeiromapParam={setKoeiroParam}

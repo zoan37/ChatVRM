@@ -29,7 +29,7 @@ Vercelでデモを公開しています。
 ローカル環境で実行する場合はこのリポジトリをクローンするか、ダウンロードしてください。
 
 ```bash
-git clone https://github.com/zoan37/ChatVRM-jp.git
+git clone https://github.com/zoan37/ChatVRM.git
 ```
 
 必要なパッケージをインストールしてください。
