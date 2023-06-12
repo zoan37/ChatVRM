@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IconButton } from "./iconButton";
 import { TextButton } from "./textButton";
 import { Message } from "@/features/messages/messages";
@@ -10,6 +10,7 @@ import {
   PRESET_D,
 } from "@/features/constants/koeiroParam";
 import { Link } from "./link";
+import { getVoices } from "@/features/elevenlabs/elevenlabs";
 
 type Props = {
   openAiKey: string;
@@ -43,6 +44,19 @@ export const Settings = ({
   onClickResetChatLog,
   onClickResetSystemPrompt,
 }: Props) => {
+
+  const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
+
+  useEffect(() => {
+    getVoices().then((data) => {
+      console.log('getVoices');
+      console.log(data);
+
+      const voices = data.voices;
+      setElevenLabsVoices(voices);
+    });
+  });
+
   return (
     <div className="absolute z-40 w-full h-full bg-white/80 backdrop-blur ">
       <div className="absolute m-24">
@@ -73,6 +87,26 @@ export const Settings = ({
             </div>
             <div className="my-16">
               The entered API key will be used directly from the browser to call the ElevenLabs API, so it will not be saved on the server.
+            </div>
+          </div>
+          <div className="my-40">
+            <div className="my-16 typography-20 font-bold">
+              Voice Selection
+            </div>
+            <div className="my-16">
+              Select among the premade voices by ElevenLabs:
+            </div>
+            <div className="my-8">
+              <select className="h-40 px-8"
+                id="select-dropdown"
+                onChange={(e) => console.log(e.target.value)}
+              >
+                {elevenLabsVoices.map((voice, index) => (
+                  <option key={index} value={voice.voice_id}>
+                    {voice.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="my-40">

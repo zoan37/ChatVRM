@@ -78,3 +78,10 @@ export async function synthesizeVoice(
   return { audio: data.audio };
   */
 }
+
+export async function getVoices() {
+  const response = await axios.get('https://api.elevenlabs.io/v1/voices');
+  console.log(response.data);
+
+  return response.data;
+}
