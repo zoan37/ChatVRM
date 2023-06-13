@@ -51,10 +51,6 @@ export default function Home() {
       setElevenLabsParam(params.elevenLabsParam);
       setChatLog(params.chatLog);
     }
-    if (window.localStorage.getItem("elevenLabsKey")) {
-      const key = window.localStorage.getItem("elevenLabsKey") as string;
-      setElevenLabsKey(key);
-    }
   }, []);
 
   useEffect(() => {
@@ -63,9 +59,6 @@ export default function Home() {
         "chatVRMParams",
         JSON.stringify({ systemPrompt, elevenLabsParam, chatLog })
       )
-
-      // store separately to be backward compatible with local storage data
-      window.localStorage.setItem("elevenLabsKey", elevenLabsKey);
     }
     );
   }, [systemPrompt, elevenLabsParam, chatLog]);
