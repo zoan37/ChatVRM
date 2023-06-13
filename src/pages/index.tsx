@@ -48,24 +48,27 @@ export default function Home() {
         window.localStorage.getItem("chatVRMParams") as string
       );
       setSystemPrompt(params.systemPrompt);
-      setElevenLabsKey(params.elevenLabsKey);
       setElevenLabsParam(params.elevenLabsParam);
       setChatLog(params.chatLog);
+    }
+    if (window.localStorage.getItem("elevenLabsKey")) {
+      const key = window.localStorage.getItem("elevenLabsKey") as string;
+      setElevenLabsKey(key);
     }
   }, []);
 
   useEffect(() => {
-    process.nextTick(() =>
+    process.nextTick(() => {
       window.localStorage.setItem(
         "chatVRMParams",
-        JSON.stringify({ 
-          systemPrompt, 
-          elevenLabsKey,
-          elevenLabsParam, 
-          chatLog })
+        JSON.stringify({ systemPrompt, elevenLabsParam, chatLog })
       )
+
+      // store separately to be backward compatible with local storage data
+      window.localStorage.setItem("elevenLabsKey", elevenLabsKey);
+    }
     );
-  }, [systemPrompt, elevenLabsKey, elevenLabsParam, chatLog]);
+  }, [systemPrompt, elevenLabsParam, chatLog]);
 
   const handleChangeChatLog = useCallback(
     (targetIndex: number, text: string) => {
