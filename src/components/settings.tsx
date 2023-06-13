@@ -94,7 +94,7 @@ export const Settings = ({
               />.
             </div>
             <div className="my-16">
-              The entered API key will be used directly from the browser to call the ElevenLabs API, so it will not be saved on the server.
+              The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
             </div>
           </div>
           <div className="my-40">

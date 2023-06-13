@@ -48,6 +48,7 @@ export default function Home() {
         window.localStorage.getItem("chatVRMParams") as string
       );
       setSystemPrompt(params.systemPrompt);
+      setElevenLabsKey(params.elevenLabsKey);
       setElevenLabsParam(params.elevenLabsParam);
       setChatLog(params.chatLog);
     }
@@ -57,10 +58,14 @@ export default function Home() {
     process.nextTick(() =>
       window.localStorage.setItem(
         "chatVRMParams",
-        JSON.stringify({ systemPrompt, elevenLabsParam, chatLog })
+        JSON.stringify({ 
+          systemPrompt, 
+          elevenLabsKey,
+          elevenLabsParam, 
+          chatLog })
       )
     );
-  }, [systemPrompt, elevenLabsParam, chatLog]);
+  }, [systemPrompt, elevenLabsKey, elevenLabsParam, chatLog]);
 
   const handleChangeChatLog = useCallback(
     (targetIndex: number, text: string) => {
