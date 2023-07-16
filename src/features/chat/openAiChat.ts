@@ -58,6 +58,7 @@ export async function getChatResponseStream(
           return;
         }
 
+        let isStreamed = false;
         const response = await ai.generateText(
           {
             messages: messages
@@ -70,12 +71,19 @@ export async function getChatResponseStream(
               console.log(res!.message.content)
       
               controller.enqueue(res!.message.content);
+
+              isStreamed = true;
             }
           }
         );
 
         console.log('response');
         console.log(response);
+
+        // handle case where streaming is not supported (e.g. for Cohere model)
+        if (!isStreamed) {
+          controller.enqueue(response[0].message.content);
+        }
       } catch (error) {
         controller.error(error);
       } finally {
