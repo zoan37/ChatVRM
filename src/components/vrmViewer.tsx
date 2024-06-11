@@ -5,11 +5,13 @@ import { buildUrl } from "@/utils/buildUrl";
 export default function VrmViewer() {
   const { viewer } = useContext(ViewerContext);
 
+  const AVATAR_SAMPLE_B_VRM_URL = 'https://ensn6revz2uwrc6l.public.blob.vercel-storage.com/AvatarSample_B-IPh7uMREBmAV4Bud1hQ7cOmj5L6FMg.vrm';
+
   const canvasRef = useCallback(
     (canvas: HTMLCanvasElement) => {
       if (canvas) {
         viewer.setup(canvas);
-        viewer.loadVrm(buildUrl("/AvatarSample_B.vrm"));
+        viewer.loadVrm(buildUrl(AVATAR_SAMPLE_B_VRM_URL));
 
         // Drag and DropでVRMを差し替え
         canvas.addEventListener("dragover", function (event) {
