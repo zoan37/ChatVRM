@@ -1,6 +1,8 @@
 import { ElevenLabsParam } from "../constants/elevenLabsParam";
 import { TalkStyle } from "../messages/messages";
 import axios from 'axios';
+import { ElevenLabsClient } from "elevenlabs";
+
 
 export async function synthesizeVoice(
   message: string,
@@ -49,9 +51,15 @@ export async function synthesizeVoice(
   };
 }
 
-export async function getVoices() {
+export async function getVoices(elevenLabsKey: string) {
+  const client = new ElevenLabsClient({ apiKey: elevenLabsKey });
+  const voices = await client.voices.getAll();
+  console.log(voices);
+  return voices;
+  /*
   const response = await axios.get('https://api.elevenlabs.io/v1/voices');
   console.log(response.data);
 
   return response.data;
+  */
 }
