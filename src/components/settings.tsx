@@ -53,9 +53,9 @@ export const Settings = ({
   const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
 
   useEffect(() => {
-    // if statement to prevent spamming ElevenLabs API
-    if (elevenLabsVoices.length == 0) {
-      getVoices().then((data) => {
+    // Check if ElevenLabs API key exists before fetching voices
+    if (elevenLabsKey) {
+      getVoices(elevenLabsKey).then((data) => {
         console.log('getVoices');
         console.log(data);
   
@@ -63,7 +63,7 @@ export const Settings = ({
         setElevenLabsVoices(voices);
       });
     }
-  });
+  }, [elevenLabsKey]); // Added elevenLabsKey as a dependency
 
   return (
     <div className="absolute z-40 w-full h-full bg-white/80 backdrop-blur ">
