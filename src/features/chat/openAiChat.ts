@@ -73,7 +73,8 @@ export async function getChatResponseStream(
             body: JSON.stringify({
               // "model": "cohere/command",
               // "model": "openai/gpt-3.5-turbo",
-              "model": "cohere/command-r-plus",
+              // "model": "cohere/command-r-plus",
+              "model": "anthropic/claude-3.5-sonnet:beta",
               "messages": messages,
               "temperature": 0.7,
               "max_tokens": 200,
@@ -120,12 +121,24 @@ export async function getChatResponseStream(
                   return JSON.parse(jsonStr);
                 });
 
+                // console.log('messages');
+                // console.log(messages);
+
                 // loop through messages and enqueue them to the controller
-                messages.forEach((message) => {
-                  const content = message.choices[0].delta.content;
-                  // console.log(content);
-                  controller.enqueue(content);
-                });
+
+                try {
+                  messages.forEach((message) => {
+                    const content = message.choices[0].delta.content;
+
+                    controller.enqueue(content);
+                  });
+                } catch (error) {
+                  // log the messages
+                  console.log('error processing messages:');
+                  console.log(messages);
+
+                  throw error;
+                }
 
                 // Parse the chunk as JSON
                 // const parsedChunk = JSON.parse(chunk);

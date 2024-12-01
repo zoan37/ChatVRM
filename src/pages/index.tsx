@@ -149,8 +149,8 @@ export default function Home() {
 
           receivedMessage += value;
 
-          console.log('receivedMessage');
-          console.log(receivedMessage);
+          // console.log('receivedMessage');
+          // console.log(receivedMessage);
 
           // 返答内容のタグ部分の検出
           const tagMatch = receivedMessage.match(/^\[(.*?)\]/);
