@@ -62,7 +62,7 @@ export const Settings = ({
       getVoices(elevenLabsKey).then((data) => {
         console.log('getVoices');
         console.log(data);
-  
+
         const voices = data.voices;
         setElevenLabsVoices(voices);
       });
@@ -116,7 +116,7 @@ export const Settings = ({
               />.
             </div>
             <div className="my-16">
-            The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
+              The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
             </div>
           </div>
           <div className="my-40">
@@ -178,14 +178,18 @@ export const Settings = ({
               />
               {backgroundImage && (
                 <div className="flex flex-col gap-4">
-                  <img 
-                    src={backgroundImage} 
-                    alt="Background Preview" 
-                    className="max-w-[200px] rounded-4"
-                  />
-                  <TextButton onClick={handleRemoveBackground}>
-                    Remove Background
-                  </TextButton>
+                  <div className="my-8">
+                    <img
+                      src={backgroundImage}
+                      alt="Background Preview"
+                      className="max-w-[200px] rounded-4"
+                    />
+                  </div>
+                  <div className="my-8">
+                    <TextButton onClick={handleRemoveBackground}>
+                      Remove Background
+                    </TextButton>
+                  </div>
                 </div>
               )}
               <div className="text-sm text-gray-600">
