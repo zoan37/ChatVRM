@@ -30,6 +30,8 @@ type Props = {
   onClickOpenVrmFile: () => void;
   onClickResetChatLog: () => void;
   onClickResetSystemPrompt: () => void;
+  backgroundImage: string;
+  onChangeBackgroundImage: (image: string) => void;
 };
 export const Settings = ({
   openAiKey,
@@ -48,6 +50,8 @@ export const Settings = ({
   onClickOpenVrmFile,
   onClickResetChatLog,
   onClickResetSystemPrompt,
+  backgroundImage,
+  onChangeBackgroundImage,
 }: Props) => {
 
   const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
@@ -58,12 +62,30 @@ export const Settings = ({
       getVoices(elevenLabsKey).then((data) => {
         console.log('getVoices');
         console.log(data);
-  
+
         const voices = data.voices;
         setElevenLabsVoices(voices);
       });
     }
   }, [elevenLabsKey]); // Added elevenLabsKey as a dependency
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        onChangeBackgroundImage(base64String);
+        localStorage.setItem('backgroundImage', base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveBackground = () => {
+    onChangeBackgroundImage('');
+    localStorage.removeItem('backgroundImage');
+  };
 
   return (
     <div className="absolute z-40 w-full h-full bg-white/80 backdrop-blur ">
@@ -94,7 +116,7 @@ export const Settings = ({
               />.
             </div>
             <div className="my-16">
-            The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
+              The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
             </div>
           </div>
           <div className="my-40">
@@ -141,6 +163,39 @@ export const Settings = ({
               onChange={onChangeSystemPrompt}
               className="px-16 py-8  bg-surface1 hover:bg-surface1-hover h-168 rounded-8 w-full"
             ></textarea>
+          </div>
+          <div className="my-40">
+            <div className="my-16 typography-20 font-bold">
+              Background Image
+            </div>
+            <div className="my-16">Choose a custom background image:</div>
+            <div className="my-8 flex flex-col gap-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="my-4"
+              />
+              {backgroundImage && (
+                <div className="flex flex-col gap-4">
+                  <div className="my-8">
+                    <img
+                      src={backgroundImage}
+                      alt="Background Preview"
+                      className="max-w-[200px] rounded-4"
+                    />
+                  </div>
+                  <div className="my-8">
+                    <TextButton onClick={handleRemoveBackground}>
+                      Remove Background
+                    </TextButton>
+                  </div>
+                </div>
+              )}
+              <div className="text-sm text-gray-600">
+                The background image will be saved in your browser and restored when you return.
+              </div>
+            </div>
           </div>
           {chatLog.length > 0 && (
             <div className="my-40">

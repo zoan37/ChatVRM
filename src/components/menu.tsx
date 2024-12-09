@@ -3,7 +3,7 @@ import { Message } from "@/features/messages/messages";
 import { ElevenLabsParam } from "@/features/constants/elevenLabsParam";
 import { KoeiroParam } from "@/features/constants/koeiroParam";
 import { ChatLog } from "./chatLog";
-import React, { useCallback, useContext, useRef, useState } from "react";
+import React, { useCallback, useContext, useRef, useState, useEffect } from "react";
 import { Settings } from "./settings";
 import { ViewerContext } from "@/features/vrmViewer/viewerContext";
 import { AssistantText } from "./assistantText";
@@ -24,6 +24,8 @@ type Props = {
   onChangeKoeiromapParam: (param: KoeiroParam) => void;
   handleClickResetChatLog: () => void;
   handleClickResetSystemPrompt: () => void;
+  backgroundImage: string;
+  onChangeBackgroundImage: (value: string) => void;
 };
 export const Menu = ({
   openAiKey,
@@ -41,11 +43,20 @@ export const Menu = ({
   onChangeKoeiromapParam,
   handleClickResetChatLog,
   handleClickResetSystemPrompt,
+  backgroundImage,
+  onChangeBackgroundImage,
 }: Props) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showChatLog, setShowChatLog] = useState(false);
   const { viewer } = useContext(ViewerContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const savedBackground = localStorage.getItem('backgroundImage');
+    if (savedBackground) {
+      onChangeBackgroundImage(savedBackground);
+    }
+  }, [onChangeBackgroundImage]);
 
   const handleChangeSystemPrompt = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -112,6 +123,10 @@ export const Menu = ({
     [viewer]
   );
 
+  const handleBackgroundImageChange = (image: string) => {
+    onChangeBackgroundImage(image);
+  };
+
   return (
     <>
       <div className="absolute z-10 m-24">
@@ -159,6 +174,8 @@ export const Menu = ({
           onClickOpenVrmFile={handleClickOpenVrmFile}
           onClickResetChatLog={handleClickResetChatLog}
           onClickResetSystemPrompt={handleClickResetSystemPrompt}
+          backgroundImage={backgroundImage}
+          onChangeBackgroundImage={handleBackgroundImageChange}
         />
       )}
       {!showChatLog && assistantMessage && (

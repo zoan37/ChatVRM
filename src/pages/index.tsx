@@ -17,6 +17,7 @@ import { Menu } from "@/components/menu";
 import { GitHubLink } from "@/components/githubLink";
 import { Meta } from "@/components/meta";
 import { ElevenLabsParam, DEFAULT_ELEVEN_LABS_PARAM } from "@/features/constants/elevenLabsParam";
+import { buildUrl } from "@/utils/buildUrl";
 
 const m_plus_2 = M_PLUS_2({
   variable: "--font-m-plus-2",
@@ -41,6 +42,7 @@ export default function Home() {
   const [chatProcessing, setChatProcessing] = useState(false);
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [assistantMessage, setAssistantMessage] = useState("");
+  const [backgroundImage, setBackgroundImage] = useState<string>('');
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -54,6 +56,10 @@ export default function Home() {
     if (window.localStorage.getItem("elevenLabsKey")) {
       const key = window.localStorage.getItem("elevenLabsKey") as string;
       setElevenLabsKey(key);
+    }
+    const savedBackground = localStorage.getItem('backgroundImage');
+    if (savedBackground) {
+      setBackgroundImage(savedBackground);
     }
   }, []);
 
@@ -70,6 +76,16 @@ export default function Home() {
     );
   }, [systemPrompt, elevenLabsParam, chatLog]);
 
+  useEffect(() => {
+    if (backgroundImage) {
+      document.body.style.backgroundImage = `url(${backgroundImage})`;
+      // document.body.style.backgroundSize = 'cover';
+      // document.body.style.backgroundPosition = 'center';
+    } else {
+      document.body.style.backgroundImage = `url(${buildUrl("/bg-c.png")})`;
+    }
+  }, [backgroundImage]);
+
   const handleChangeChatLog = useCallback(
     (targetIndex: number, text: string) => {
       const newChatLog = chatLog.map((v: Message, i) => {
@@ -82,7 +98,7 @@ export default function Home() {
   );
 
   /**
-   * 文ごとに音声を直列でリクエストしながら再生する
+   * 文ごとに音声を直��でリクエストしながら再生する
    */
   const handleSpeakAi = useCallback(
     async (
@@ -169,7 +185,7 @@ export default function Home() {
             console.log(tag);
           }
 
-          // 返答を一文単位で切り出して処理する
+          // 返答を一単位で切り出して処理する
           const sentenceMatch = receivedMessage.match(
             /^(.+[。．！？\n.!?]|.{10,}[、,])/
           );
@@ -254,6 +270,8 @@ export default function Home() {
         onChangeKoeiromapParam={setKoeiroParam}
         handleClickResetChatLog={() => setChatLog([])}
         handleClickResetSystemPrompt={() => setSystemPrompt(SYSTEM_PROMPT)}
+        backgroundImage={backgroundImage}
+        onChangeBackgroundImage={setBackgroundImage}
       />
       <GitHubLink />
     </div>
