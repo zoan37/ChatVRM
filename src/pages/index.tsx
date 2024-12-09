@@ -41,6 +41,7 @@ export default function Home() {
   const [chatProcessing, setChatProcessing] = useState(false);
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [assistantMessage, setAssistantMessage] = useState("");
+  const [backgroundImage, setBackgroundImage] = useState<string>('');
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -54,6 +55,10 @@ export default function Home() {
     if (window.localStorage.getItem("elevenLabsKey")) {
       const key = window.localStorage.getItem("elevenLabsKey") as string;
       setElevenLabsKey(key);
+    }
+    const savedBackground = localStorage.getItem('backgroundImage');
+    if (savedBackground) {
+      setBackgroundImage(savedBackground);
     }
   }, []);
 
@@ -254,8 +259,20 @@ export default function Home() {
         onChangeKoeiromapParam={setKoeiroParam}
         handleClickResetChatLog={() => setChatLog([])}
         handleClickResetSystemPrompt={() => setSystemPrompt(SYSTEM_PROMPT)}
+        backgroundImage={backgroundImage}
+        onChangeBackgroundImage={setBackgroundImage}
       />
       <GitHubLink />
+      {backgroundImage && (
+        <div 
+          className="fixed inset-0 -z-10" 
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
     </div>
   );
 }

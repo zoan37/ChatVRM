@@ -24,6 +24,8 @@ type Props = {
   onChangeKoeiromapParam: (param: KoeiroParam) => void;
   handleClickResetChatLog: () => void;
   handleClickResetSystemPrompt: () => void;
+  backgroundImage: string;
+  onChangeBackgroundImage: (value: string) => void;
 };
 export const Menu = ({
   openAiKey,
@@ -41,20 +43,20 @@ export const Menu = ({
   onChangeKoeiromapParam,
   handleClickResetChatLog,
   handleClickResetSystemPrompt,
+  backgroundImage,
+  onChangeBackgroundImage,
 }: Props) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showChatLog, setShowChatLog] = useState(false);
   const { viewer } = useContext(ViewerContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [backgroundImage, setBackgroundImage] = useState<string>('');
 
   useEffect(() => {
-    // Access localStorage only after component mounts (client-side)
     const savedBackground = localStorage.getItem('backgroundImage');
     if (savedBackground) {
-      setBackgroundImage(savedBackground);
+      onChangeBackgroundImage(savedBackground);
     }
-  }, []);
+  }, [onChangeBackgroundImage]);
 
   const handleChangeSystemPrompt = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -122,7 +124,7 @@ export const Menu = ({
   );
 
   const handleBackgroundImageChange = (image: string) => {
-    setBackgroundImage(image);
+    onChangeBackgroundImage(image);
   };
 
   return (
