@@ -100,6 +100,8 @@ export class Model {
       let expression = this.vrm?.expressionManager?.getExpression("JawOpen");
       if (expression) {
         // handle Perfect Sync standard
+        
+        // @ts-ignore
         this.emoteController?.lipSync("JawOpen", volume);
         // this.emoteController?.lipSync("MouthStretch", 0.4 * volume);
       } else {
