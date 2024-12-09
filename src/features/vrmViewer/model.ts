@@ -101,6 +101,7 @@ export class Model {
       if (expression) {
         // handle Perfect Sync standard
         this.emoteController?.lipSync("JawOpen", volume);
+        // this.emoteController?.lipSync("MouthStretch", 0.4 * volume);
       } else {
         this.emoteController?.lipSync("aa", volume);
       }
