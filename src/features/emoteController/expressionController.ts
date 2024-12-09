@@ -51,6 +51,12 @@ export class ExpressionController {
   }
 
   public lipSync(preset: VRMExpressionPresetName, value: number) {
+    // let expressions = this._expressionManager?.getExpressions();
+    // console.log(expressions);
+
+    // let expression = this._expressionManager?.getExpression("MouthPucker");
+    //console.log(expression);
+
     if (this._currentLipSync) {
       this._expressionManager?.setValue(this._currentLipSync.preset, 0);
     }

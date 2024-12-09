@@ -39,6 +39,9 @@ export class Model {
     const vrm = (this.vrm = gltf.userData.vrm);
     vrm.scene.name = "VRMRoot";
 
+    // log all info about vrm, including blend shapes and expressions
+    console.log(vrm);
+
     VRMUtils.rotateVRM0(vrm);
     this.mixer = new THREE.AnimationMixer(vrm.scene);
 
@@ -92,7 +95,18 @@ export class Model {
   public update(delta: number): void {
     if (this._lipSync) {
       const { volume } = this._lipSync.update();
-      this.emoteController?.lipSync("aa", volume);
+
+      // variable for expression controller
+      let expression = this.vrm?.expressionManager?.getExpression("JawOpen");
+      if (expression) {
+        // handle Perfect Sync standard
+        
+        // @ts-ignore
+        this.emoteController?.lipSync("JawOpen", volume);
+        // this.emoteController?.lipSync("MouthStretch", 0.4 * volume);
+      } else {
+        this.emoteController?.lipSync("aa", volume);
+      }
     }
 
     this.emoteController?.update(delta);
