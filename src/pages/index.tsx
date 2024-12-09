@@ -17,6 +17,7 @@ import { Menu } from "@/components/menu";
 import { GitHubLink } from "@/components/githubLink";
 import { Meta } from "@/components/meta";
 import { ElevenLabsParam, DEFAULT_ELEVEN_LABS_PARAM } from "@/features/constants/elevenLabsParam";
+import { buildUrl } from "@/utils/buildUrl";
 
 const m_plus_2 = M_PLUS_2({
   variable: "--font-m-plus-2",
@@ -75,6 +76,16 @@ export default function Home() {
     );
   }, [systemPrompt, elevenLabsParam, chatLog]);
 
+  useEffect(() => {
+    if (backgroundImage) {
+      document.body.style.backgroundImage = `url(${backgroundImage})`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+    } else {
+      document.body.style.backgroundImage = `url(${buildUrl("/bg-c.png")})`;
+    }
+  }, [backgroundImage]);
+
   const handleChangeChatLog = useCallback(
     (targetIndex: number, text: string) => {
       const newChatLog = chatLog.map((v: Message, i) => {
@@ -87,7 +98,7 @@ export default function Home() {
   );
 
   /**
-   * 文ごとに音声を直列でリクエストしながら再生する
+   * 文ごとに音声を直��でリクエストしながら再生する
    */
   const handleSpeakAi = useCallback(
     async (
@@ -174,7 +185,7 @@ export default function Home() {
             console.log(tag);
           }
 
-          // 返答を一文単位で切り出して処理する
+          // 返答を一単位で切り出して処理する
           const sentenceMatch = receivedMessage.match(
             /^(.+[。．！？\n.!?]|.{10,}[、,])/
           );
@@ -263,16 +274,6 @@ export default function Home() {
         onChangeBackgroundImage={setBackgroundImage}
       />
       <GitHubLink />
-      {backgroundImage && (
-        <div 
-          className="fixed inset-0 -z-10" 
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-      )}
     </div>
   );
 }
