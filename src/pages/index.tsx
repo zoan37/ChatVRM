@@ -79,8 +79,8 @@ export default function Home() {
   useEffect(() => {
     if (backgroundImage) {
       document.body.style.backgroundImage = `url(${backgroundImage})`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
+      // document.body.style.backgroundSize = 'cover';
+      // document.body.style.backgroundPosition = 'center';
     } else {
       document.body.style.backgroundImage = `url(${buildUrl("/bg-c.png")})`;
     }
