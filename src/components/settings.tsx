@@ -12,6 +12,8 @@ import {
 import { Link } from "./link";
 import { getVoices } from "@/features/elevenlabs/elevenlabs";
 import { ElevenLabsParam } from "@/features/constants/elevenLabsParam";
+import { RestreamTokens } from "./restreamTokens";
+import Cookies from 'js-cookie';
 
 type Props = {
   openAiKey: string;
@@ -32,6 +34,7 @@ type Props = {
   onClickResetSystemPrompt: () => void;
   backgroundImage: string;
   onChangeBackgroundImage: (image: string) => void;
+  onRestreamTokensUpdate?: (tokens: { access_token: string; refresh_token: string; } | null) => void;
 };
 export const Settings = ({
   openAiKey,
@@ -52,6 +55,7 @@ export const Settings = ({
   onClickResetSystemPrompt,
   backgroundImage,
   onChangeBackgroundImage,
+  onRestreamTokensUpdate = () => {},
 }: Props) => {
 
   const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
@@ -197,6 +201,7 @@ export const Settings = ({
               </div>
             </div>
           </div>
+          <RestreamTokens onTokensUpdate={onRestreamTokensUpdate} />
           {chatLog.length > 0 && (
             <div className="my-40">
               <div className="my-8 grid-cols-2">
