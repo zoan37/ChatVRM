@@ -128,7 +128,7 @@ export const Settings = ({
               Voice Selection
             </div>
             <div className="my-16">
-              Select among the premade voices by ElevenLabs:
+              Select among the voices in ElevenLabs (including custom voices):
             </div>
             <div className="my-8">
               <select className="h-40 px-8"
