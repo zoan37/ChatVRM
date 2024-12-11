@@ -18,6 +18,7 @@ import { GitHubLink } from "@/components/githubLink";
 import { Meta } from "@/components/meta";
 import { ElevenLabsParam, DEFAULT_ELEVEN_LABS_PARAM } from "@/features/constants/elevenLabsParam";
 import { buildUrl } from "@/utils/buildUrl";
+import { websocketService } from '../services/websocketService';
 
 const m_plus_2 = M_PLUS_2({
   variable: "--font-m-plus-2",
@@ -241,15 +242,18 @@ export default function Home() {
     [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, elevenLabsParam]
   );
 
-  const handleChatMessage = (message: string) => {
-    // Call your LLM handler here with the message
-    // This might be the same function you use to handle regular user input
-    handleUserMessage(message);
-  };
-
   const handleTokensUpdate = useCallback((tokens: any) => {
     setRestreamTokens(tokens);
   }, []);
+
+  // Set up global websocket handler
+  useEffect(() => {
+    // Set the LLM callback at the top level
+    websocketService.setLLMCallback((message) => {
+      // Use handleSendChat directly
+      handleSendChat(message);
+    });
+  }, [handleSendChat]);
 
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>

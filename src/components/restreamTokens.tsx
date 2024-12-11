@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextButton } from './textButton';
 import Cookies from 'js-cookie';
+import { websocketService } from '../services/websocketService';
 
 interface RestreamTokens {
     access_token: string;
@@ -17,16 +18,14 @@ interface ChatMessage {
 
 type Props = {
     onTokensUpdate: (tokens: RestreamTokens | null) => void;
-    onChatMessage?: (message: string) => void;
 };
 
-export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate, onChatMessage }) => {
+export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [rawMessages, setRawMessages] = useState<any[]>([]);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const wsRef = useRef<WebSocket | null>(null);
 
     // Load saved tokens on component mount
     useEffect(() => {
@@ -75,6 +74,35 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate, onChatMessage 
         setError(null);
     };
 
+    useEffect(() => {
+        // Add listeners for websocket events
+        const handleConnectionChange = (isConnected: boolean) => {
+            setIsConnected(isConnected);
+            setError(null);
+        };
+
+        const handleRawMessage = (message: any) => {
+            setRawMessages(prev => [...prev, message]);
+        };
+
+        const handleChatMessage = (message: ChatMessage) => {
+            setMessages(prev => [...prev, message]);
+        };
+
+        websocketService.on('connectionChange', handleConnectionChange);
+        websocketService.on('rawMessage', handleRawMessage);
+        websocketService.on('chatMessage', handleChatMessage);
+
+        // Check initial connection state
+        setIsConnected(websocketService.isConnected());
+
+        return () => {
+            websocketService.off('connectionChange', handleConnectionChange);
+            websocketService.off('rawMessage', handleRawMessage);
+            websocketService.off('chatMessage', handleChatMessage);
+        };
+    }, []);
+
     const connectWebSocket = () => {
         try {
             const tokens: RestreamTokens = JSON.parse(jsonInput);
@@ -84,75 +112,15 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate, onChatMessage 
                 return;
             }
 
-            const url = `wss://chat.api.restream.io/ws?accessToken=${tokens.access_token}`;
-            wsRef.current = new WebSocket(url);
-
-            wsRef.current.onopen = () => {
-                setIsConnected(true);
-                setError(null);
-            };
-
-            wsRef.current.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    
-                    console.log('WebSocket message received:', data);
-                    setRawMessages(prev => [...prev, data]);
-                    
-                    // Filter and store chat messages
-                    if (data.action === 'event' && data.payload.eventTypeId === 24) {
-                        const messageData = data.payload.eventPayload;
-                        const chatMessage: ChatMessage = {
-                            username: messageData.author.username,
-                            displayName: messageData.author.displayName,
-                            timestamp: data.timestamp,
-                            text: messageData.text
-                        };
-                        setMessages(prev => [...prev, chatMessage]);
-
-                        // Send message to LLM if handler is provided
-                        if (onChatMessage) {
-                            const formattedMessage = `Received these messages from your livestream, please respond:\n${messageData.author.displayName}: ${messageData.text}`;
-                            onChatMessage(formattedMessage);
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error parsing message:', err);
-                }
-            };
-
-            wsRef.current.onerror = (error) => {
-                console.error('WebSocket Error:', error);
-                setError('WebSocket connection error');
-                setIsConnected(false);
-            };
-
-            wsRef.current.onclose = () => {
-                setIsConnected(false);
-                setError(null);
-            };
-
+            websocketService.connect(tokens.access_token);
         } catch (err) {
             setError('Invalid JSON format or connection error');
         }
     };
 
     const disconnectWebSocket = () => {
-        if (wsRef.current) {
-            wsRef.current.close();
-            wsRef.current = null;
-            setIsConnected(false);
-        }
+        websocketService.disconnect();
     };
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
-            }
-        };
-    }, []);
 
     return (
         <div className="my-40">
