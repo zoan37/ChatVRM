@@ -26,6 +26,8 @@ type Props = {
   handleClickResetSystemPrompt: () => void;
   backgroundImage: string;
   onChangeBackgroundImage: (value: string) => void;
+  onChatMessage: (message: string) => void;
+  onTokensUpdate: (tokens: any) => void;
 };
 export const Menu = ({
   openAiKey,
@@ -45,6 +47,8 @@ export const Menu = ({
   handleClickResetSystemPrompt,
   backgroundImage,
   onChangeBackgroundImage,
+  onChatMessage,
+  onTokensUpdate,
 }: Props) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showChatLog, setShowChatLog] = useState(false);
@@ -176,6 +180,8 @@ export const Menu = ({
           onClickResetSystemPrompt={handleClickResetSystemPrompt}
           backgroundImage={backgroundImage}
           onChangeBackgroundImage={handleBackgroundImageChange}
+          onTokensUpdate={onTokensUpdate}
+          onChatMessage={onChatMessage}
         />
       )}
       {!showChatLog && assistantMessage && (

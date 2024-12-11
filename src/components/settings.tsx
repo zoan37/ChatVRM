@@ -35,6 +35,8 @@ type Props = {
   backgroundImage: string;
   onChangeBackgroundImage: (image: string) => void;
   onRestreamTokensUpdate?: (tokens: { access_token: string; refresh_token: string; } | null) => void;
+  onTokensUpdate: (tokens: any) => void;
+  onChatMessage: (message: string) => void;
 };
 export const Settings = ({
   openAiKey,
@@ -56,6 +58,8 @@ export const Settings = ({
   backgroundImage,
   onChangeBackgroundImage,
   onRestreamTokensUpdate = () => {},
+  onTokensUpdate,
+  onChatMessage,
 }: Props) => {
 
   const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
@@ -201,7 +205,7 @@ export const Settings = ({
               </div>
             </div>
           </div>
-          <RestreamTokens onTokensUpdate={onRestreamTokensUpdate} />
+          <RestreamTokens onTokensUpdate={onTokensUpdate} onChatMessage={onChatMessage} />
           {chatLog.length > 0 && (
             <div className="my-40">
               <div className="my-8 grid-cols-2">

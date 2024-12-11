@@ -43,6 +43,7 @@ export default function Home() {
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [assistantMessage, setAssistantMessage] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const [restreamTokens, setRestreamTokens] = useState<any>(null);
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -98,7 +99,7 @@ export default function Home() {
   );
 
   /**
-   * 文ごとに音声を直��でリクエストしながら再生する
+   * 文ごとに音声を直接でリクエストしながら再生する
    */
   const handleSpeakAi = useCallback(
     async (
@@ -240,6 +241,16 @@ export default function Home() {
     [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, elevenLabsParam]
   );
 
+  const handleChatMessage = (message: string) => {
+    // Call your LLM handler here with the message
+    // This might be the same function you use to handle regular user input
+    handleUserMessage(message);
+  };
+
+  const handleTokensUpdate = useCallback((tokens: any) => {
+    setRestreamTokens(tokens);
+  }, []);
+
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>
       <Meta />
@@ -272,6 +283,8 @@ export default function Home() {
         handleClickResetSystemPrompt={() => setSystemPrompt(SYSTEM_PROMPT)}
         backgroundImage={backgroundImage}
         onChangeBackgroundImage={setBackgroundImage}
+        onTokensUpdate={handleTokensUpdate}
+        onChatMessage={handleSendChat}
       />
       <GitHubLink />
     </div>

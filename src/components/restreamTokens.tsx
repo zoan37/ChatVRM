@@ -17,9 +17,10 @@ interface ChatMessage {
 
 type Props = {
     onTokensUpdate: (tokens: RestreamTokens | null) => void;
+    onChatMessage?: (message: string) => void;
 };
 
-export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
+export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate, onChatMessage }) => {
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -95,10 +96,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                 try {
                     const data = JSON.parse(event.data);
                     
-                    // Add console log for each received message
                     console.log('WebSocket message received:', data);
-                    
-                    // Store all messages
                     setRawMessages(prev => [...prev, data]);
                     
                     // Filter and store chat messages
@@ -111,6 +109,12 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                             text: messageData.text
                         };
                         setMessages(prev => [...prev, chatMessage]);
+
+                        // Send message to LLM if handler is provided
+                        if (onChatMessage) {
+                            const formattedMessage = `Received these messages from your livestream, please respond:\n${messageData.author.displayName}: ${messageData.text}`;
+                            onChatMessage(formattedMessage);
+                        }
                     }
                 } catch (err) {
                     console.error('Error parsing message:', err);
