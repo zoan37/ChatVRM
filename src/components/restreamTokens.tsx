@@ -7,6 +7,14 @@ interface RestreamTokens {
     refresh_token: string;
 }
 
+// Add new interface for chat messages
+interface ChatMessage {
+    username: string;
+    displayName: string;
+    timestamp: number;
+    text: string;
+}
+
 type Props = {
     onTokensUpdate: (tokens: RestreamTokens | null) => void;
 };
@@ -15,7 +23,8 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
-    const [messages, setMessages] = useState<string[]>([]);
+    const [rawMessages, setRawMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
 
     // Load saved tokens on component mount
@@ -84,8 +93,25 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
 
             wsRef.current.onmessage = (event) => {
                 try {
-                    const action = JSON.parse(event.data);
-                    setMessages(prev => [...prev, JSON.stringify(action, null, 2)]);
+                    const data = JSON.parse(event.data);
+                    
+                    // Add console log for each received message
+                    console.log('WebSocket message received:', data);
+                    
+                    // Store all messages
+                    setRawMessages(prev => [...prev, data]);
+                    
+                    // Filter and store chat messages
+                    if (data.action === 'event' && data.payload.eventTypeId === 24) {
+                        const messageData = data.payload.eventPayload;
+                        const chatMessage: ChatMessage = {
+                            username: messageData.author.username,
+                            displayName: messageData.author.displayName,
+                            timestamp: data.timestamp,
+                            text: messageData.text
+                        };
+                        setMessages(prev => [...prev, chatMessage]);
+                    }
                 } catch (err) {
                     console.error('Error parsing message:', err);
                 }
@@ -158,15 +184,31 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                 Status: {isConnected ? 'Connected' : 'Disconnected'}
             </div>
 
-            {/* Messages Display */}
+            {/* Filtered Chat Messages */}
             {messages.length > 0 && (
                 <div className="my-16">
-                    <div className="typography-16 font-bold mb-8">Incoming Messages:</div>
+                    <div className="typography-16 font-bold mb-8">Filtered Chat Messages:</div>
                     <div className="bg-surface1 p-16 rounded-8 max-h-[400px] overflow-y-auto">
                         {messages.map((msg, index) => (
-                            <pre key={index} className="font-mono text-sm mb-8 whitespace-pre-wrap">
-                                {msg}
-                            </pre>
+                            <div key={index} className="font-mono text-sm mb-8">
+                                [{new Date(msg.timestamp * 1000).toLocaleTimeString()}] 
+                                <strong>{msg.displayName}</strong> (@{msg.username}): 
+                                {msg.text}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Raw Messages */}
+            {rawMessages.length > 0 && (
+                <div className="my-16">
+                    <div className="typography-16 font-bold mb-8">Raw Messages:</div>
+                    <div className="bg-surface1 p-16 rounded-8 max-h-[400px] overflow-y-auto">
+                        {rawMessages.map((msg, index) => (
+                            <div key={index} className="font-mono text-sm mb-8">
+                                {JSON.stringify(msg, null, 2)}
+                            </div>
                         ))}
                     </div>
                 </div>
