@@ -193,6 +193,11 @@ export class WebSocketService extends EventEmitter {
 
                 if (this.ws) {
                     console.log('Closing old connection');
+
+                    // clear event handlers for close on old connection
+                    // this prevents connectionChange from being emitted
+                    this.ws.onclose = null;
+                    
                     this.ws.close();
                 }
 
