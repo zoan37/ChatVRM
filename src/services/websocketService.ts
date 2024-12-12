@@ -17,8 +17,6 @@ type LLMCallback = (message: string) => Promise<{
 // TODO: Add middle out. Even though OpenRouter uses middle out, we should do it on our side
 // to prevent the requests to OpenRouter from being too large.
 
-// TODO: Refresh access token. Right now, the websocket will fail after 1 hour (time for access token to expire).
-
 export class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
     private currentToken: string | null = null;

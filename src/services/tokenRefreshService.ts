@@ -66,7 +66,7 @@ class TokenRefreshService extends EventEmitter {
         // Set up auto-refresh every 45 minutes (tokens expire after 1 hour)
         this.refreshInterval = setInterval(() => {
             this.attemptTokenRefresh(onTokensUpdate);
-        }, 45 * 60 * 1000); // 50 minutes
+        }, 45 * 60 * 1000); // 45 minutes
     }
 
     stopAutoRefresh() {
