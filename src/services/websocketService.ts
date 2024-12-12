@@ -19,7 +19,7 @@ type LLMCallback = (message: string) => Promise<{
 
 export class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
-    private accessToken: string | null = null;
+    private currentToken: string | null = null;
     private llmCallback: LLMCallback | null = null;
     
     // New state management properties
@@ -38,35 +38,46 @@ export class WebSocketService extends EventEmitter {
     }
 
     connect(accessToken: string) {
-        this.accessToken = accessToken;
+        this.currentToken = accessToken;
         const url = `wss://chat.api.restream.io/ws?accessToken=${accessToken}`;
         this.ws = new WebSocket(url);
+        this.setupEventHandlers();
+    }
 
-        this.ws.onopen = () => {
-            this.emit('connectionChange', true);
-        };
-
-        this.ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                this.emit('rawMessage', data);
-                
-                if (data.action === 'event' && data.payload.eventTypeId === 24) {
-                    this.handleChatMessage(data.payload.eventPayload);
-                }
-            } catch (err) {
-                console.error('Error parsing message:', err);
+    private handleWebSocketMessage = (event: MessageEvent) => {
+        try {
+            const data = JSON.parse(event.data);
+            this.emit('rawMessage', data);
+            
+            if (data.action === 'event' && data.payload.eventTypeId === 24) {
+                this.handleChatMessage(data.payload.eventPayload);
             }
-        };
+        } catch (err) {
+            console.error('Error parsing message:', err);
+        }
+    };
 
-        this.ws.onerror = (error) => {
-            console.error('WebSocket Error:', error);
-            this.emit('connectionChange', false);
-        };
+    private handleWebSocketClose = () => {
+        this.emit('connectionChange', false);
+    };
 
-        this.ws.onclose = () => {
-            this.emit('connectionChange', false);
-        };
+    private handleWebSocketError = (error: Event) => {
+        console.error('WebSocket error:', error);
+        this.emit('connectionChange', false);
+    };
+
+    private handleWebSocketOpen = () => {
+        console.log('WebSocket connection established');
+        this.emit('connectionChange', true);
+    };
+
+    private setupEventHandlers() {
+        if (!this.ws) return;
+
+        this.ws.onmessage = this.handleWebSocketMessage;
+        this.ws.onclose = this.handleWebSocketClose;
+        this.ws.onerror = this.handleWebSocketError;
+        this.ws.onopen = this.handleWebSocketOpen;
     }
 
     disconnect() {
@@ -144,6 +155,41 @@ export class WebSocketService extends EventEmitter {
         } finally {
             this.isProcessing = false;
         }
+    }
+
+    async reconnectWithNewToken(newToken: string) {
+        console.log('Reconnecting with new token');
+        
+        // Create and connect new WebSocket with token in URL
+        const url = `wss://chat.api.restream.io/ws?accessToken=${newToken}`;
+        const newWs = new WebSocket(url);
+        
+        // Wait for the new connection to be ready
+        await new Promise((resolve, reject) => {
+            newWs.onopen = () => {
+                console.log('WebSocket connection established with new token');
+                resolve(true);
+            };
+            newWs.onerror = (error) => reject(error);
+        });
+
+        // Store new token
+        this.currentToken = newToken;
+
+        // Close old connection after new one is established
+        if (this.ws) {
+            console.log('Closing old connection');
+            this.ws.close();
+        }
+
+        // Set up event handlers for new connection
+        this.ws = newWs;
+        this.setupEventHandlers();
+        
+        // Emit connection change event
+        this.emit('connectionChange', true);
+
+        console.log('Finished reconnecting with new token');
     }
 }
 

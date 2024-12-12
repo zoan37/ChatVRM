@@ -3,6 +3,7 @@ import { TextButton } from './textButton';
 import Cookies from 'js-cookie';
 import { websocketService } from '../services/websocketService';
 import { refreshAccessToken } from '../utils/auth';
+import { tokenRefreshService } from '../services/tokenRefreshService';
 
 interface RestreamTokens {
     access_token: string;
@@ -47,7 +48,6 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
         setJsonInput(newValue);
         setError(null);
 
-        // Try to save tokens automatically when pasted
         try {
             const tokens: RestreamTokens = JSON.parse(newValue);
 
@@ -56,20 +56,21 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                 return;
             }
 
-            // Format the JSON string with proper indentation
             const formattedJson = JSON.stringify(tokens, null, 2);
-
-            // Save to cookies with 30 days expiry
             Cookies.set('restream_tokens', formattedJson, { expires: 30 });
             onTokensUpdate(tokens);
+            
             setError(null);
-            setJsonInput(formattedJson); // Keep the formatted JSON in the textarea
+            setJsonInput(formattedJson);
         } catch (err) {
             setError('Invalid JSON format. Please check your input.');
         }
     };
 
     const handleClearTokens = () => {
+        // Stop auto-refresh when tokens are cleared
+        tokenRefreshService.stopAutoRefresh();
+        
         Cookies.remove('restream_tokens');
         onTokensUpdate(null);
         setJsonInput('');
@@ -77,7 +78,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     };
 
     useEffect(() => {
-        // Add listeners for websocket events
+        // Add listeners for websocket events and token refresh events
         const handleConnectionChange = (isConnected: boolean) => {
             setIsConnected(isConnected);
             setError(null);
@@ -91,9 +92,23 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             setMessages(prev => [...prev, message]);
         };
 
+        // Add new handler for token refresh
+        const handleTokenRefresh = (newTokens: RestreamTokens) => {
+            const formattedJson = JSON.stringify(newTokens, null, 2);
+            setJsonInput(formattedJson);
+            setError(null);
+            
+            // Re-attach WebSocket event listeners after reconnection
+            websocketService.off('rawMessage', handleRawMessage);
+            websocketService.off('chatMessage', handleChatMessage);
+            websocketService.on('rawMessage', handleRawMessage);
+            websocketService.on('chatMessage', handleChatMessage);
+        };
+
         websocketService.on('connectionChange', handleConnectionChange);
         websocketService.on('rawMessage', handleRawMessage);
         websocketService.on('chatMessage', handleChatMessage);
+        tokenRefreshService.on('tokensRefreshed', handleTokenRefresh);
 
         // Check initial connection state
         setIsConnected(websocketService.isConnected());
@@ -102,6 +117,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             websocketService.off('connectionChange', handleConnectionChange);
             websocketService.off('rawMessage', handleRawMessage);
             websocketService.off('chatMessage', handleChatMessage);
+            tokenRefreshService.off('tokensRefreshed', handleTokenRefresh);
         };
     }, []);
 
@@ -115,6 +131,8 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             }
 
             websocketService.connect(tokens.access_token);
+            // Start auto-refresh when connecting
+            tokenRefreshService.startAutoRefresh(tokens, onTokensUpdate);
         } catch (err) {
             setError('Invalid JSON format or connection error');
         }
@@ -122,6 +140,8 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
 
     const disconnectWebSocket = () => {
         websocketService.disconnect();
+        // Stop auto-refresh when disconnecting
+        tokenRefreshService.stopAutoRefresh();
     };
 
     // Modify sendTestMessage to match websocketService's handler format
