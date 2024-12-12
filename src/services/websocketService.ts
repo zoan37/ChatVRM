@@ -5,6 +5,8 @@ interface ChatMessage {
     displayName: string;
     timestamp: number;
     text: string;
+    avatar: string;
+    eventTypeId: number;  // 24 for X, 4 for Twitch
 }
 
 type LLMCallback = (message: string) => Promise<{
@@ -28,7 +30,7 @@ export class WebSocketService extends EventEmitter {
     private messageQueue: ChatMessage[] = [];
     private isProcessing: boolean = false;
     private batchTimeout: NodeJS.Timeout | null = null;
-    private readonly BATCH_DELAY = 2000; // Wait 2 seconds to batch messages
+    private readonly BATCH_DELAY = 1000; // Wait 1 second to batch messages
     
     constructor() {
         super();
@@ -51,8 +53,9 @@ export class WebSocketService extends EventEmitter {
             const data = JSON.parse(event.data);
             this.emit('rawMessage', data);
             
-            if (data.action === 'event' && data.payload.eventTypeId === 24) {
-                this.handleChatMessage(data.payload.eventPayload);
+            if (data.action === 'event' && 
+                (data.payload.eventTypeId === 24 || data.payload.eventTypeId === 4)) {
+                this.handleChatMessage(data);
             }
         } catch (err) {
             console.error('Error parsing message:', err);
@@ -101,12 +104,17 @@ export class WebSocketService extends EventEmitter {
         return this.ws?.readyState === WebSocket.OPEN;
     }
 
-    public handleChatMessage(messageData: any) {
+    public handleChatMessage(data: any) {
+        const payload = data.payload;
+        const messageData = payload.eventPayload;
+        
         const chatMessage: ChatMessage = {
             username: messageData.author.username,
             displayName: messageData.author.displayName,
-            timestamp: messageData.timestamp,
-            text: messageData.text
+            timestamp: data.timestamp,
+            text: messageData.text,
+            avatar: messageData.author.avatar,
+            eventTypeId: payload.eventTypeId
         };
         
         this.emit('chatMessage', chatMessage);
@@ -138,7 +146,6 @@ export class WebSocketService extends EventEmitter {
         this.messageQueue = this.messageQueue.slice(messagesToProcess.length);
 
         try {
-            // Format messages from our snapshot
             const formattedMessages = messagesToProcess
                 .map(msg => `${msg.displayName}: ${msg.text}`)
                 .join('\n');
