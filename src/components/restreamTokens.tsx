@@ -20,6 +20,26 @@ type Props = {
     onTokensUpdate: (tokens: RestreamTokens | null) => void;
 };
 
+// Add this helper function at the top level, outside the component
+const generateTestMessage = (): ChatMessage => {
+    const usernames = ['tester1', 'bot_user', 'mock_viewer', 'test_chat'];
+    const messages = [
+        'Hello there!', 
+        'Testing 123', 
+        'Great stream!', 
+        'How are you today?',
+        'This is a test message',
+        'Just checking things out'
+    ];
+    
+    return {
+        username: usernames[Math.floor(Math.random() * usernames.length)],
+        displayName: 'Test User',
+        timestamp: Math.floor(Date.now() / 1000),
+        text: messages[Math.floor(Math.random() * messages.length)]
+    };
+};
+
 export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -122,6 +142,20 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
         websocketService.disconnect();
     };
 
+    // Modify sendTestMessage to match websocketService's handler format
+    const sendTestMessage = () => {
+        const testMessage = {
+            author: {
+                username: 'tester1',
+                displayName: 'Test User'
+            },
+            timestamp: Math.floor(Date.now() / 1000),
+            text: 'Test message ' + Math.random().toString(36).substring(7)
+        };
+        
+        websocketService.handleChatMessage(testMessage);
+    };
+
     return (
         <div className="my-40">
             <div className="my-16 typography-20 font-bold">Restream Integration</div>
@@ -145,9 +179,14 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                         {isConnected ? 'Stop Listening' : 'Start Listening'}
                     </TextButton>
                 </div>
-                <div className="">
+                <div className="pr-8">
                     <TextButton onClick={handleClearTokens}>Clear Tokens</TextButton>
                 </div>
+                {isConnected && (
+                    <div>
+                        <TextButton onClick={sendTestMessage}>Send Test Message</TextButton>
+                    </div>
+                )}
             </div>
 
             {/* Connection Status */}

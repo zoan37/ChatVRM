@@ -7,7 +7,7 @@ interface ChatMessage {
     text: string;
 }
 
-class WebSocketService extends EventEmitter {
+export class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
     private accessToken: string | null = null;
     private llmCallback: ((messages: string) => Promise<void>) | null = null;
@@ -75,7 +75,7 @@ class WebSocketService extends EventEmitter {
         return this.ws?.readyState === WebSocket.OPEN;
     }
 
-    private handleChatMessage(messageData: any) {
+    public handleChatMessage(messageData: any) {
         const chatMessage: ChatMessage = {
             username: messageData.author.username,
             displayName: messageData.author.displayName,
