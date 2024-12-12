@@ -21,6 +21,8 @@ export class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
     private currentToken: string | null = null;
     private llmCallback: LLMCallback | null = null;
+    private reconnectionPromise: Promise<void> | null = null;
+    private isReconnecting: boolean = false;
     
     // New state management properties
     private messageQueue: ChatMessage[] = [];
@@ -58,7 +60,10 @@ export class WebSocketService extends EventEmitter {
     };
 
     private handleWebSocketClose = () => {
-        this.emit('connectionChange', false);
+        // Only emit connection change if we're not in the middle of reconnecting
+        if (!this.isReconnecting) {
+            this.emit('connectionChange', false);
+        }
     };
 
     private handleWebSocketError = (error: Event) => {
@@ -158,38 +163,52 @@ export class WebSocketService extends EventEmitter {
     }
 
     async reconnectWithNewToken(newToken: string) {
-        console.log('Reconnecting with new token');
-        
-        // Create and connect new WebSocket with token in URL
-        const url = `wss://chat.api.restream.io/ws?accessToken=${newToken}`;
-        const newWs = new WebSocket(url);
-        
-        // Wait for the new connection to be ready
-        await new Promise((resolve, reject) => {
-            newWs.onopen = () => {
-                console.log('WebSocket connection established with new token');
-                resolve(true);
-            };
-            newWs.onerror = (error) => reject(error);
-        });
-
-        // Store new token
-        this.currentToken = newToken;
-
-        // Close old connection after new one is established
-        if (this.ws) {
-            console.log('Closing old connection');
-            this.ws.close();
+        // If there's an ongoing reconnection, wait for it to finish
+        if (this.reconnectionPromise) {
+            await this.reconnectionPromise;
+            // If the tokens match after waiting, we don't need to reconnect again
+            if (this.currentToken === newToken) {
+                return;
+            }
         }
 
-        // Set up event handlers for new connection
-        this.ws = newWs;
-        this.setupEventHandlers();
-        
-        // Emit connection change event
-        this.emit('connectionChange', true);
+        // Create new reconnection promise
+        this.reconnectionPromise = (async () => {
+            console.log('Reconnecting with new token');
+            this.isReconnecting = true;
+            
+            try {
+                const url = `wss://chat.api.restream.io/ws?accessToken=${newToken}`;
+                const newWs = new WebSocket(url);
+                
+                await new Promise((resolve, reject) => {
+                    newWs.onopen = () => {
+                        console.log('WebSocket connection established with new token');
+                        resolve(true);
+                    };
+                    newWs.onerror = (error) => reject(error);
+                });
 
-        console.log('Finished reconnecting with new token');
+                this.currentToken = newToken;
+
+                if (this.ws) {
+                    console.log('Closing old connection');
+                    this.ws.close();
+                }
+
+                this.ws = newWs;
+                this.setupEventHandlers();
+                this.emit('connectionChange', true);
+
+                console.log('Finished reconnecting with new token');
+            } finally {
+                this.isReconnecting = false;
+                this.reconnectionPromise = null;
+            }
+        })();
+
+        // Wait for the reconnection to complete
+        await this.reconnectionPromise;
     }
 }
 
