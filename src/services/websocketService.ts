@@ -12,6 +12,9 @@ type LLMCallback = (message: string) => Promise<{
     error?: string;
 }>;
 
+// TODO: Add middle out. Even though OpenRouter uses middle out, we should do it on our side
+// to prevent the requests to OpenRouter from being too large.
+
 export class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
     private accessToken: string | null = null;
