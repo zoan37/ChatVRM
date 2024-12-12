@@ -7,10 +7,15 @@ interface ChatMessage {
     text: string;
 }
 
+type LLMCallback = (message: string) => Promise<{
+    processed: boolean;
+    error?: string;
+}>;
+
 export class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
     private accessToken: string | null = null;
-    private llmCallback: ((messages: string) => Promise<void>) | null = null;
+    private llmCallback: LLMCallback | null = null;
     
     // New state management properties
     private messageQueue: ChatMessage[] = [];
@@ -23,7 +28,7 @@ export class WebSocketService extends EventEmitter {
     }
 
     // Updated to handle async callback
-    setLLMCallback(callback: (messages: string) => Promise<void>) {
+    setLLMCallback(callback: LLMCallback) {
         this.llmCallback = callback;
     }
 
@@ -105,22 +110,32 @@ export class WebSocketService extends EventEmitter {
         }
 
         this.isProcessing = true;
+        
+        // Take a snapshot of current messages to process, leaving the queue open for new messages
+        const messagesToProcess = [...this.messageQueue];
+        // Clear only the messages we're about to process
+        this.messageQueue = this.messageQueue.slice(messagesToProcess.length);
 
         try {
-            // Format all queued messages
-            const formattedMessages = this.messageQueue
+            // Format messages from our snapshot
+            const formattedMessages = messagesToProcess
                 .map(msg => `${msg.displayName}: ${msg.text}`)
                 .join('\n');
+
+            console.log(`Processing ${messagesToProcess.length} messages in batch`);
             
             const prompt = `Received these messages from your livestream, please respond:\n${formattedMessages}`;
             
-            // Clear the queue before processing
-            this.messageQueue = [];
-            
-            // Wait for the LLM processing and audio playback to complete
-            await this.llmCallback(prompt);
+            const result = await this.llmCallback(prompt);
+            if (!result.processed) {
+                console.log(`Message processing skipped: ${result.error}`);
+                // Add failed messages back to the front of the queue
+                this.messageQueue = [...messagesToProcess, ...this.messageQueue];
+            }
         } catch (error) {
             console.error('Error processing message queue:', error);
+            // Add failed messages back to the front of the queue
+            this.messageQueue = [...messagesToProcess, ...this.messageQueue];
         } finally {
             this.isProcessing = false;
         }

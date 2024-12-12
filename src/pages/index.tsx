@@ -32,6 +32,11 @@ const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
+type LLMCallbackResult = {
+  processed: boolean;
+  error?: string;
+};
+
 export default function Home() {
   const { viewer } = useContext(ViewerContext);
 
@@ -262,16 +267,26 @@ export default function Home() {
 
   // Set up global websocket handler
   useEffect(() => {
-    websocketService.setLLMCallback(async (message: string) => {
+    websocketService.setLLMCallback(async (message: string): Promise<LLMCallbackResult> => {
       try {
-        // Wait until any current audio playback is finished
-        while (isPlayingAudio || chatProcessing) {
-          console.log('Waiting for current audio/chat to finish...');
-          await new Promise(resolve => setTimeout(resolve, 100)); // Check every 100ms
+        if (isPlayingAudio || chatProcessing) {
+          console.log('Skipping message processing - system busy');
+          return {
+            processed: false,
+            error: 'System is busy processing previous message'
+          };
         }
+        
         await handleSendChat(message);
+        return {
+          processed: true
+        };
       } catch (error) {
         console.error('Error processing message:', error);
+        return {
+          processed: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred'
+        };
       }
     });
   }, [handleSendChat, chatProcessing, isPlayingAudio]);
