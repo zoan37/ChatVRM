@@ -47,11 +47,11 @@ export const Introduction = ({ openAiKey, elevenLabsKey, onChangeAiKey, onChange
             is used for displaying and manipulating 3D models,
             &nbsp;<Link
               url={
-                "https://windowai.io/"
+                "https://openrouter.ai/"
               }
-              label={"Window AI"}
+              label={"OpenRouter"}
             />&nbsp;
-            is used for running AI chat models on the web, and 
+            is used for LLM access, and 
             &nbsp;<Link url={"https://beta.elevenlabs.io/"} label={"ElevenLabs"} />&nbsp;
             is used for text to speech.
           </div>
@@ -72,19 +72,6 @@ export const Introduction = ({ openAiKey, elevenLabsKey, onChangeAiKey, onChange
           </div>
           <div>
             Do not intentionally induce discriminatory or violent remarks, or remarks that demean a specific person. Also, when replacing characters using a VRM model, please follow the model&apos;s terms of use.
-          </div>
-        </div>
-        <div className="my-24">
-          <div className="my-8 font-bold typography-20 text-secondary">
-            Window AI
-          </div>
-          <div>
-            Install the&nbsp;
-            <Link
-              url="https://windowai.io/"
-              label="Window AI"
-            />
-            &nbsp;browser extension to run AI chat models.
           </div>
         </div>
         <div className="my-24">

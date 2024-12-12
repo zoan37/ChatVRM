@@ -53,8 +53,8 @@ export const MessageInput = ({
         </div>
         <div className="py-4 bg-[#413D43] text-center text-white font-Montserrat">
           powered by&nbsp;
-          <a target="_blank" href="https://windowai.io/" className="underline">
-            Window AI
+          <a target="_blank" href="https://openrouter.ai/" className="underline">
+            OpenRouter
           </a>,&nbsp;
           <a target="_blank" href="https://beta.elevenlabs.io/" className="underline">
             ElevenLabs
