@@ -51,6 +51,8 @@ export default function Home() {
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [restreamTokens, setRestreamTokens] = useState<any>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  // needed because AI speaking could involve multiple audios being played in sequence
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -116,22 +118,29 @@ export default function Home() {
       onStart?: () => void,
       onEnd?: () => void
     ) => {
-      await speakCharacter(
-        screenplay, 
-        elevenLabsKey, 
-        elevenLabsParam, 
-        viewer, 
-        () => {
-          setIsPlayingAudio(true);  // Set when audio starts
-          console.log('audio playback started');
-          onStart?.();
-        }, 
-        () => {
-          setIsPlayingAudio(false);  // Set when audio completes
-          console.log('audio playback completed');
-          onEnd?.();
-        }
-      );
+      setIsAISpeaking(true);  // Set speaking state before starting
+      try {
+        await speakCharacter(
+          screenplay, 
+          elevenLabsKey, 
+          elevenLabsParam, 
+          viewer, 
+          () => {
+            setIsPlayingAudio(true);
+            console.log('audio playback started');
+            onStart?.();
+          }, 
+          () => {
+            setIsPlayingAudio(false);
+            console.log('audio playback completed');
+            onEnd?.();
+          }
+        );
+      } catch (error) {
+        console.error('Error during AI speech:', error);
+      } finally {
+        setIsAISpeaking(false);  // Ensure speaking state is reset even if there's an error
+      }
     },
     [viewer]
   );
@@ -269,7 +278,7 @@ export default function Home() {
   useEffect(() => {
     websocketService.setLLMCallback(async (message: string): Promise<LLMCallbackResult> => {
       try {
-        if (isPlayingAudio || chatProcessing) {
+        if (isAISpeaking || isPlayingAudio || chatProcessing) {
           console.log('Skipping message processing - system busy');
           return {
             processed: false,
@@ -289,7 +298,7 @@ export default function Home() {
         };
       }
     });
-  }, [handleSendChat, chatProcessing, isPlayingAudio]);
+  }, [handleSendChat, chatProcessing, isPlayingAudio, isAISpeaking]);
 
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>
