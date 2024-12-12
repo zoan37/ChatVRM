@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextButton } from './textButton';
 import Cookies from 'js-cookie';
 import { websocketService } from '../services/websocketService';
+import { refreshAccessToken } from '../utils/auth';
 
 interface RestreamTokens {
     access_token: string;
@@ -20,32 +21,13 @@ type Props = {
     onTokensUpdate: (tokens: RestreamTokens | null) => void;
 };
 
-// Add this helper function at the top level, outside the component
-const generateTestMessage = (): ChatMessage => {
-    const usernames = ['tester1', 'bot_user', 'mock_viewer', 'test_chat'];
-    const messages = [
-        'Hello there!', 
-        'Testing 123', 
-        'Great stream!', 
-        'How are you today?',
-        'This is a test message',
-        'Just checking things out'
-    ];
-    
-    return {
-        username: usernames[Math.floor(Math.random() * usernames.length)],
-        displayName: 'Test User',
-        timestamp: Math.floor(Date.now() / 1000),
-        text: messages[Math.floor(Math.random() * messages.length)]
-    };
-};
-
 export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [rawMessages, setRawMessages] = useState<any[]>([]);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Load saved tokens on component mount
     useEffect(() => {
@@ -156,6 +138,28 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
         websocketService.handleChatMessage(testMessage);
     };
 
+    const handleRefreshTokens = async () => {
+        try {
+            const currentTokens: RestreamTokens = JSON.parse(jsonInput);
+            setIsRefreshing(true);
+            setError(null);
+
+            const newTokens = await refreshAccessToken(currentTokens.refresh_token);
+            
+            // Format the JSON string with proper indentation
+            const formattedJson = JSON.stringify(newTokens, null, 2);
+            
+            // Save to cookies with 30 days expiry
+            Cookies.set('restream_tokens', formattedJson, { expires: 30 });
+            onTokensUpdate(newTokens);
+            setJsonInput(formattedJson);
+        } catch (err) {
+            setError('Failed to refresh tokens. Please check your refresh token.');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
     return (
         <div className="my-40">
             <div className="my-16 typography-20 font-bold">Restream Integration</div>
@@ -181,6 +185,14 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                 </div>
                 <div className="pr-8">
                     <TextButton onClick={handleClearTokens}>Clear Tokens</TextButton>
+                </div>
+                <div className="pr-8">
+                    <TextButton 
+                        onClick={handleRefreshTokens}
+                        disabled={isRefreshing || !jsonInput}
+                    >
+                        {isRefreshing ? 'Refreshing...' : 'Refresh Tokens'}
+                    </TextButton>
                 </div>
                 {isConnected && (
                     <div>
