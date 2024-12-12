@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import { websocketService } from '../services/websocketService';
 import { refreshAccessToken } from '../utils/auth';
 import { tokenRefreshService } from '../services/tokenRefreshService';
+import { Link } from './link';
 
 interface RestreamTokens {
     access_token: string;
@@ -59,7 +60,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             const formattedJson = JSON.stringify(tokens, null, 2);
             Cookies.set('restream_tokens', formattedJson, { expires: 30 });
             onTokensUpdate(tokens);
-            
+
             setError(null);
             setJsonInput(formattedJson);
         } catch (err) {
@@ -70,7 +71,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     const handleClearTokens = () => {
         // Stop auto-refresh when tokens are cleared
         tokenRefreshService.stopAutoRefresh();
-        
+
         Cookies.remove('restream_tokens');
         onTokensUpdate(null);
         setJsonInput('');
@@ -97,7 +98,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             const formattedJson = JSON.stringify(newTokens, null, 2);
             setJsonInput(formattedJson);
             setError(null);
-            
+
             // Re-attach WebSocket event listeners after reconnection
             websocketService.off('rawMessage', handleRawMessage);
             websocketService.off('chatMessage', handleChatMessage);
@@ -154,7 +155,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             timestamp: Math.floor(Date.now() / 1000),
             text: 'Test message ' + Math.random().toString(36).substring(7)
         };
-        
+
         websocketService.handleChatMessage(testMessage);
     };
 
@@ -165,10 +166,10 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
             setError(null);
 
             const newTokens = await refreshAccessToken(currentTokens.refresh_token);
-            
+
             // Format the JSON string with proper indentation
             const formattedJson = JSON.stringify(newTokens, null, 2);
-            
+
             // Save to cookies with 30 days expiry
             Cookies.set('restream_tokens', formattedJson, { expires: 30 });
             onTokensUpdate(newTokens);
@@ -183,6 +184,13 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     return (
         <div className="my-40">
             <div className="my-16 typography-20 font-bold">Restream Integration</div>
+            <div className="my-16">
+                Get your Restream authentication tokens JSON from the <Link
+                    url="https://restream-token-fetcher.vercel.app/"
+                    label="Restream Token Fetcher"
+                />. It gives permission for ChatVRM to listen to your chat messages from Restream (currently X and Twitch sources are supported).
+                Once you paste your tokens JSON and click the Start Listening button, ChatVRM will listen to your chat messages.
+            </div>
             <div className="my-16">
                 Paste your Restream authentication tokens JSON here:
             </div>
@@ -207,7 +215,7 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                     <TextButton onClick={handleClearTokens}>Clear Tokens</TextButton>
                 </div>
                 <div className="pr-8">
-                    <TextButton 
+                    <TextButton
                         onClick={handleRefreshTokens}
                         disabled={isRefreshing || !jsonInput}
                     >
@@ -234,8 +242,8 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
                     <div className="bg-surface1 p-16 rounded-8 max-h-[400px] overflow-y-auto">
                         {messages.map((msg, index) => (
                             <div key={index} className="font-mono text-sm mb-8">
-                                [{new Date(msg.timestamp * 1000).toLocaleTimeString()}] 
-                                <strong>{msg.displayName}</strong> (@{msg.username}): 
+                                [{new Date(msg.timestamp * 1000).toLocaleTimeString()}]
+                                <strong>{msg.displayName}</strong> (@{msg.username}):
                                 {msg.text}
                             </div>
                         ))}
