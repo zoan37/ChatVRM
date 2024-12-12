@@ -13,7 +13,7 @@ By importing VRM files, you can adjust the voice to match the character, and gen
 ChatVRM mainly uses the following technologies.
 
 - Generate response text
-    - [Window AI](https://windowai.io/)
+    - [OpenRouter](https://openrouter.ai/)
 - User speech recognition
     - [Web Speech API (SpeechRecognition)](https://developer.mozilla.org/ja/docs/Web/API/SpeechRecognition)
 - Text to speech
@@ -51,16 +51,19 @@ After execution, access the following URL.
 [http://localhost:3000](http://localhost:3000) 
 
 
----
+## How to integrate with livestream
 
-## Window AI
+ChatVRM supports reading chat messages from a livestream and generating responses, via the Restream API. Currently, X and Twitch sources are supported. It uses a batching system so that the LLM is called for each batch of messages, not for each message.
 
-ChatVRM uses Window AI to generate responses.
+Steps (this is mostly in the Settings UI):
+1. Set OpenRouter API key. (The demo uses a free key by default for users to try things out, but it can run out of credits and need a refill).
+2. Set ElevenLabs API key.
+3. Choose your desired ElevenLabs voice.
+4. Choose your desired VRM avatar model.
+5. Set your custom system prompt for your character.
+6. Get your Restream authentication tokens JSON from the [Restream Token Fetcher](https://restream-token-fetcher.vercel.app/). It gives permission for ChatVRM to listen to your chat messages from Restream (currently X and Twitch sources are supported).
+7. Paste your Restream authentication tokens JSON, and click Start Listening.
+8. Start your livestream using Restream.
 
-- [https://windowai.io/](https://windowai.io/)
-
-
-## ElevenLabs
-ChatVRM uses ElevenLabs API to do text to speech.
-
-- [https://beta.elevenlabs.io/](https://beta.elevenlabs.io/)
+Troubleshooting:
+- If you are not seeing messages being received from your livestream, you can try clicking the "Stop Listening" button and then "Start Listening" again, getting new Restream tokens, or refreshing the ChatVRM site.

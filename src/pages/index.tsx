@@ -18,6 +18,7 @@ import { GitHubLink } from "@/components/githubLink";
 import { Meta } from "@/components/meta";
 import { ElevenLabsParam, DEFAULT_ELEVEN_LABS_PARAM } from "@/features/constants/elevenLabsParam";
 import { buildUrl } from "@/utils/buildUrl";
+import { websocketService } from '../services/websocketService';
 
 const m_plus_2 = M_PLUS_2({
   variable: "--font-m-plus-2",
@@ -31,6 +32,11 @@ const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
+type LLMCallbackResult = {
+  processed: boolean;
+  error?: string;
+};
+
 export default function Home() {
   const { viewer } = useContext(ViewerContext);
 
@@ -43,6 +49,17 @@ export default function Home() {
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [assistantMessage, setAssistantMessage] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<string>('');
+  const [restreamTokens, setRestreamTokens] = useState<any>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  // needed because AI speaking could involve multiple audios being played in sequence
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [openRouterKey, setOpenRouterKey] = useState<string>(() => {
+    // Try to load from localStorage on initial render
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('openRouterKey') || '';
+    }
+    return '';
+  });
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -56,6 +73,11 @@ export default function Home() {
     if (window.localStorage.getItem("elevenLabsKey")) {
       const key = window.localStorage.getItem("elevenLabsKey") as string;
       setElevenLabsKey(key);
+    }
+    // load openrouter key from localStorage
+    const savedOpenRouterKey = localStorage.getItem('openRouterKey');
+    if (savedOpenRouterKey) {
+      setOpenRouterKey(savedOpenRouterKey);
     }
     const savedBackground = localStorage.getItem('backgroundImage');
     if (savedBackground) {
@@ -98,7 +120,7 @@ export default function Home() {
   );
 
   /**
-   * 文ごとに音声を直��でリクエストしながら再生する
+   * 文ごとに音声を直接でリクエストしながら再生する
    */
   const handleSpeakAi = useCallback(
     async (
@@ -108,9 +130,29 @@ export default function Home() {
       onStart?: () => void,
       onEnd?: () => void
     ) => {
-      speakCharacter(screenplay, elevenLabsKey, elevenLabsParam, viewer, onStart, onEnd);
-
-      console.log('speak character');
+      setIsAISpeaking(true);  // Set speaking state before starting
+      try {
+        await speakCharacter(
+          screenplay, 
+          elevenLabsKey, 
+          elevenLabsParam, 
+          viewer, 
+          () => {
+            setIsPlayingAudio(true);
+            console.log('audio playback started');
+            onStart?.();
+          }, 
+          () => {
+            setIsPlayingAudio(false);
+            console.log('audio playback completed');
+            onEnd?.();
+          }
+        );
+      } catch (error) {
+        console.error('Error during AI speech:', error);
+      } finally {
+        setIsAISpeaking(false);  // Ensure speaking state is reset even if there's an error
+      }
     },
     [viewer]
   );
@@ -149,7 +191,13 @@ export default function Home() {
         ...messageLog,
       ];
 
-      const stream = await getChatResponseStream(messages, openAiKey).catch(
+      let localOpenRouterKey = openRouterKey;
+      if (!localOpenRouterKey) {
+        // fallback to free key for users to try things out
+        localOpenRouterKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY!;
+      }
+
+      const stream = await getChatResponseStream(messages, openAiKey, localOpenRouterKey).catch(
         (e) => {
           console.error(e);
           return null;
@@ -237,8 +285,44 @@ export default function Home() {
       setChatLog(messageLogAssistant);
       setChatProcessing(false);
     },
-    [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, elevenLabsParam]
+    [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, elevenLabsParam, openRouterKey]
   );
+
+  const handleTokensUpdate = useCallback((tokens: any) => {
+    setRestreamTokens(tokens);
+  }, []);
+
+  // Set up global websocket handler
+  useEffect(() => {
+    websocketService.setLLMCallback(async (message: string): Promise<LLMCallbackResult> => {
+      try {
+        if (isAISpeaking || isPlayingAudio || chatProcessing) {
+          console.log('Skipping message processing - system busy');
+          return {
+            processed: false,
+            error: 'System is busy processing previous message'
+          };
+        }
+        
+        await handleSendChat(message);
+        return {
+          processed: true
+        };
+      } catch (error) {
+        console.error('Error processing message:', error);
+        return {
+          processed: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred'
+        };
+      }
+    });
+  }, [handleSendChat, chatProcessing, isPlayingAudio, isAISpeaking]);
+
+  const handleOpenRouterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newKey = event.target.value;
+    setOpenRouterKey(newKey);
+    localStorage.setItem('openRouterKey', newKey);
+  };
 
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>
@@ -257,6 +341,7 @@ export default function Home() {
       <Menu
         openAiKey={openAiKey}
         elevenLabsKey={elevenLabsKey}
+        openRouterKey={openRouterKey}
         systemPrompt={systemPrompt}
         chatLog={chatLog}
         elevenLabsParam={elevenLabsParam}
@@ -272,6 +357,9 @@ export default function Home() {
         handleClickResetSystemPrompt={() => setSystemPrompt(SYSTEM_PROMPT)}
         backgroundImage={backgroundImage}
         onChangeBackgroundImage={setBackgroundImage}
+        onTokensUpdate={handleTokensUpdate}
+        onChatMessage={handleSendChat}
+        onChangeOpenRouterKey={handleOpenRouterKeyChange}
       />
       <GitHubLink />
     </div>

@@ -12,16 +12,20 @@ import {
 import { Link } from "./link";
 import { getVoices } from "@/features/elevenlabs/elevenlabs";
 import { ElevenLabsParam } from "@/features/constants/elevenLabsParam";
+import { RestreamTokens } from "./restreamTokens";
+import Cookies from 'js-cookie';
 
 type Props = {
   openAiKey: string;
   elevenLabsKey: string;
+  openRouterKey: string;
   systemPrompt: string;
   chatLog: Message[];
   elevenLabsParam: ElevenLabsParam;
   koeiroParam: KoeiroParam;
   onClickClose: () => void;
   onChangeAiKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeOpenRouterKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeElevenLabsKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeElevenLabsVoice: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   onChangeSystemPrompt: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -32,10 +36,14 @@ type Props = {
   onClickResetSystemPrompt: () => void;
   backgroundImage: string;
   onChangeBackgroundImage: (image: string) => void;
+  onRestreamTokensUpdate?: (tokens: { access_token: string; refresh_token: string; } | null) => void;
+  onTokensUpdate: (tokens: any) => void;
+  onChatMessage: (message: string) => void;
 };
 export const Settings = ({
   openAiKey,
   elevenLabsKey,
+  openRouterKey,
   chatLog,
   systemPrompt,
   elevenLabsParam,
@@ -43,6 +51,7 @@ export const Settings = ({
   onClickClose,
   onChangeSystemPrompt,
   onChangeAiKey,
+  onChangeOpenRouterKey,
   onChangeElevenLabsKey,
   onChangeElevenLabsVoice,
   onChangeChatLog,
@@ -52,6 +61,9 @@ export const Settings = ({
   onClickResetSystemPrompt,
   backgroundImage,
   onChangeBackgroundImage,
+  onRestreamTokensUpdate = () => {},
+  onTokensUpdate,
+  onChatMessage,
 }: Props) => {
 
   const [elevenLabsVoices, setElevenLabsVoices] = useState<any[]>([]);
@@ -100,6 +112,23 @@ export const Settings = ({
         <div className="text-text1 max-w-3xl mx-auto px-24 py-64 ">
           <div className="my-24 typography-32 font-bold">Settings</div>
           <div className="my-24">
+            <div className="my-16 typography-20 font-bold">OpenRouter API</div>
+            <input
+              type="text"
+              placeholder="OpenRouter API key"
+              value={openRouterKey}
+              onChange={onChangeOpenRouterKey}
+              className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
+            ></input>
+            <div>
+              Enter your OpenRouter API key for custom access. You can get an API key at the&nbsp;
+              <Link
+                url="https://openrouter.ai/"
+                label="OpenRouter website"
+              />. By default, this app uses its own OpenRouter API key for people to try things out easily, but that may run of credits and need to be refilled.
+            </div>
+          </div>
+          <div className="my-24">
             <div className="my-16 typography-20 font-bold">Eleven Labs API</div>
             <input
               type="text"
@@ -115,16 +144,13 @@ export const Settings = ({
                 label="ElevenLabs website"
               />.
             </div>
-            <div className="my-16">
-              The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
-            </div>
           </div>
           <div className="my-40">
             <div className="my-16 typography-20 font-bold">
               Voice Selection
             </div>
             <div className="my-16">
-              Select among the premade voices by ElevenLabs:
+              Select among the voices in ElevenLabs (including custom voices):
             </div>
             <div className="my-8">
               <select className="h-40 px-8"
@@ -197,6 +223,7 @@ export const Settings = ({
               </div>
             </div>
           </div>
+          <RestreamTokens onTokensUpdate={onTokensUpdate} onChatMessage={onChatMessage} />
           {chatLog.length > 0 && (
             <div className="my-40">
               <div className="my-8 grid-cols-2">

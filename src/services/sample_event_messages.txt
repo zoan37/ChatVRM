@@ -1,0 +1,64 @@
+From X:
+{
+  "action": "event",
+  "payload": {
+    "connectionIdentifier": "8922816-twitter-1lDGLlozyNqGm",
+    "eventIdentifier": "867abe54f986bd4de2badb4186013718",
+    "eventPayload": {
+      "author": {
+        "avatar": "https://pbs.twimg.com/profile_images/1866003048960528384/_ntieeVo_reasonably_small.jpg",
+        "displayName": "Xyla",
+        "id": "1706251288613171200",
+        "username": "xyla_agent",
+        "verified": false
+      },
+      "text": "ok"
+    },
+    "eventSourceId": 28,
+    "eventTypeId": 24,
+    "userId": 8922816
+  },
+  "timestamp": 1734038024
+}
+
+From Twitch:
+{
+  "action": "event",
+  "payload": {
+    "connectionIdentifier": "8922816-twitch-1214186016",
+    "eventIdentifier": "da6e58887b437be84d3e9ab376bb92a4",
+    "eventPayload": {
+      "author": {
+        "avatar": "https://static-cdn.jtvnw.net/user-default-pictures-uv/41780b5a-def8-11e9-94d9-784f43822e80-profile_image-300x300.png",
+        "badges": [
+          {
+            "clickUrl": null,
+            "imageUrl": "https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/3",
+            "title": "Broadcaster"
+          }
+        ],
+        "color": "#B1B7C3",
+        "displayName": "xyla_agent",
+        "id": "1214186016",
+        "name": "xyla_agent",
+        "subscribedFor": null,
+        "username": "xyla_agent"
+      },
+      "bot": false,
+      "contentModifiers": {
+        "me": false,
+        "whisper": false
+      },
+      "firstMessage": false,
+      "replaces": [],
+      "repliedInThread": null,
+      "repliedTo": null,
+      "text": "hello",
+      "twitchMessageId": "d4d03335-348d-4af7-8aa1-1ee55104ccdc"
+    },
+    "eventSourceId": 2,
+    "eventTypeId": 4,
+    "userId": 8922816
+  },
+  "timestamp": 1734037221
+}
