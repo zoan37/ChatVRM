@@ -45,6 +45,7 @@ export default function Home() {
   const [assistantMessage, setAssistantMessage] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<string>('');
   const [restreamTokens, setRestreamTokens] = useState<any>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -110,9 +111,22 @@ export default function Home() {
       onStart?: () => void,
       onEnd?: () => void
     ) => {
-      speakCharacter(screenplay, elevenLabsKey, elevenLabsParam, viewer, onStart, onEnd);
-
-      console.log('speak character');
+      await speakCharacter(
+        screenplay, 
+        elevenLabsKey, 
+        elevenLabsParam, 
+        viewer, 
+        () => {
+          setIsPlayingAudio(true);  // Set when audio starts
+          console.log('audio playback started');
+          onStart?.();
+        }, 
+        () => {
+          setIsPlayingAudio(false);  // Set when audio completes
+          console.log('audio playback completed');
+          onEnd?.();
+        }
+      );
     },
     [viewer]
   );
@@ -248,12 +262,19 @@ export default function Home() {
 
   // Set up global websocket handler
   useEffect(() => {
-    // Set the LLM callback at the top level
-    websocketService.setLLMCallback((message) => {
-      // Use handleSendChat directly
-      handleSendChat(message);
+    websocketService.setLLMCallback(async (message: string) => {
+      try {
+        // Wait until any current audio playback is finished
+        while (isPlayingAudio || chatProcessing) {
+          console.log('Waiting for current audio/chat to finish...');
+          await new Promise(resolve => setTimeout(resolve, 100)); // Check every 100ms
+        }
+        await handleSendChat(message);
+      } catch (error) {
+        console.error('Error processing message:', error);
+      }
     });
-  }, [handleSendChat]);
+  }, [handleSendChat, chatProcessing, isPlayingAudio]);
 
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>

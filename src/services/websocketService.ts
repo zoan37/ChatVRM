@@ -10,13 +10,20 @@ interface ChatMessage {
 class WebSocketService extends EventEmitter {
     private ws: WebSocket | null = null;
     private accessToken: string | null = null;
-    private llmCallback: ((message: string) => void) | null = null;
+    private llmCallback: ((messages: string) => Promise<void>) | null = null;
+    
+    // New state management properties
+    private messageQueue: ChatMessage[] = [];
+    private isProcessing: boolean = false;
+    private batchTimeout: NodeJS.Timeout | null = null;
+    private readonly BATCH_DELAY = 2000; // Wait 2 seconds to batch messages
     
     constructor() {
         super();
     }
 
-    setLLMCallback(callback: (message: string) => void) {
+    // Updated to handle async callback
+    setLLMCallback(callback: (messages: string) => Promise<void>) {
         this.llmCallback = callback;
     }
 
@@ -57,6 +64,11 @@ class WebSocketService extends EventEmitter {
             this.ws.close();
             this.ws = null;
         }
+        // Clear the interval when disconnecting
+        if (this.batchTimeout) {
+            clearInterval(this.batchTimeout);
+            this.batchTimeout = null;
+        }
     }
 
     isConnected() {
@@ -72,11 +84,45 @@ class WebSocketService extends EventEmitter {
         };
         
         this.emit('chatMessage', chatMessage);
+        this.queueMessage(chatMessage);
+    }
 
-        // Send to LLM if callback is set
-        if (this.llmCallback) {
-            const formattedMessage = `Received these messages from your livestream, please respond:\n${chatMessage.displayName}: ${chatMessage.text}`;
-            this.llmCallback(formattedMessage);
+    private queueMessage(message: ChatMessage) {
+        this.messageQueue.push(message);
+        
+        // Only start the interval if it's not already running
+        if (!this.batchTimeout) {
+            this.batchTimeout = setInterval(() => {
+                this.processMessageQueue();
+            }, this.BATCH_DELAY);
+        }
+    }
+
+    private async processMessageQueue() {
+        // If already processing or no messages, return
+        if (this.isProcessing || this.messageQueue.length === 0 || !this.llmCallback) {
+            return;
+        }
+
+        this.isProcessing = true;
+
+        try {
+            // Format all queued messages
+            const formattedMessages = this.messageQueue
+                .map(msg => `${msg.displayName}: ${msg.text}`)
+                .join('\n');
+            
+            const prompt = `Received these messages from your livestream, please respond:\n${formattedMessages}`;
+            
+            // Clear the queue before processing
+            this.messageQueue = [];
+            
+            // Wait for the LLM processing and audio playback to complete
+            await this.llmCallback(prompt);
+        } catch (error) {
+            console.error('Error processing message queue:', error);
+        } finally {
+            this.isProcessing = false;
         }
     }
 }
