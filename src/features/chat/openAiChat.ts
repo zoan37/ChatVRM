@@ -33,7 +33,8 @@ export async function getChatResponse(messages: Message[], apiKey: string) {
 
 export async function getChatResponseStream(
   messages: Message[],
-  apiKey: string
+  apiKey: string,
+  openRouterKey: string
 ) {
   // TODO: remove usages of apiKey in code
   /*
@@ -57,7 +58,7 @@ export async function getChatResponseStream(
           // if window.ai is not found, call OpenRouter
 
           // const OPENROUTER_API_KEY = '1'; // TODO: fetch from env
-          const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY; // Fetch from env
+          const OPENROUTER_API_KEY = openRouterKey; // Fetch from env
           const YOUR_SITE_URL = 'https://chat-vrm-window.vercel.app/';
           const YOUR_SITE_NAME = 'ChatVRM';
 

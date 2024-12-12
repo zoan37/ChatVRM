@@ -20,10 +20,11 @@ interface ChatMessage {
 }
 
 type Props = {
-    onTokensUpdate: (tokens: RestreamTokens | null) => void;
+    onTokensUpdate: (tokens: any) => void;
+    onChatMessage: (message: string) => void;
 };
 
-export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
+export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate, onChatMessage }) => {
     const [jsonInput, setJsonInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -148,12 +149,16 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate }) => {
     // Modify sendTestMessage to match websocketService's handler format
     const sendTestMessage = () => {
         const testMessage = {
-            author: {
-                username: 'tester1',
-                displayName: 'Test User'
-            },
-            timestamp: Math.floor(Date.now() / 1000),
-            text: 'Test message ' + Math.random().toString(36).substring(7)
+            payload: {
+                eventPayload: {
+                    author: {
+                        username: 'tester1',
+                        displayName: 'Test User'
+                    },
+                    timestamp: Math.floor(Date.now() / 1000),
+                    text: 'Test message ' + Math.random().toString(36).substring(7)
+                }
+            }
         };
 
         websocketService.handleChatMessage(testMessage);

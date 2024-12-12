@@ -53,6 +53,13 @@ export default function Home() {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   // needed because AI speaking could involve multiple audios being played in sequence
   const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [openRouterKey, setOpenRouterKey] = useState<string>(() => {
+    // Try to load from localStorage on initial render
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('openRouterKey') || '';
+    }
+    return '';
+  });
 
   useEffect(() => {
     if (window.localStorage.getItem("chatVRMParams")) {
@@ -66,6 +73,11 @@ export default function Home() {
     if (window.localStorage.getItem("elevenLabsKey")) {
       const key = window.localStorage.getItem("elevenLabsKey") as string;
       setElevenLabsKey(key);
+    }
+    // load openrouter key from localStorage
+    const savedOpenRouterKey = localStorage.getItem('openRouterKey');
+    if (savedOpenRouterKey) {
+      setOpenRouterKey(savedOpenRouterKey);
     }
     const savedBackground = localStorage.getItem('backgroundImage');
     if (savedBackground) {
@@ -179,7 +191,13 @@ export default function Home() {
         ...messageLog,
       ];
 
-      const stream = await getChatResponseStream(messages, openAiKey).catch(
+      let localOpenRouterKey = openRouterKey;
+      if (!localOpenRouterKey) {
+        // fallback to free key for users to try things out
+        localOpenRouterKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY!;
+      }
+
+      const stream = await getChatResponseStream(messages, openAiKey, localOpenRouterKey).catch(
         (e) => {
           console.error(e);
           return null;
@@ -267,7 +285,7 @@ export default function Home() {
       setChatLog(messageLogAssistant);
       setChatProcessing(false);
     },
-    [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, elevenLabsParam]
+    [systemPrompt, chatLog, handleSpeakAi, openAiKey, elevenLabsKey, elevenLabsParam, openRouterKey]
   );
 
   const handleTokensUpdate = useCallback((tokens: any) => {
@@ -300,6 +318,12 @@ export default function Home() {
     });
   }, [handleSendChat, chatProcessing, isPlayingAudio, isAISpeaking]);
 
+  const handleOpenRouterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newKey = event.target.value;
+    setOpenRouterKey(newKey);
+    localStorage.setItem('openRouterKey', newKey);
+  };
+
   return (
     <div className={`${m_plus_2.variable} ${montserrat.variable}`}>
       <Meta />
@@ -317,6 +341,7 @@ export default function Home() {
       <Menu
         openAiKey={openAiKey}
         elevenLabsKey={elevenLabsKey}
+        openRouterKey={openRouterKey}
         systemPrompt={systemPrompt}
         chatLog={chatLog}
         elevenLabsParam={elevenLabsParam}
@@ -334,6 +359,7 @@ export default function Home() {
         onChangeBackgroundImage={setBackgroundImage}
         onTokensUpdate={handleTokensUpdate}
         onChatMessage={handleSendChat}
+        onChangeOpenRouterKey={handleOpenRouterKeyChange}
       />
       <GitHubLink />
     </div>

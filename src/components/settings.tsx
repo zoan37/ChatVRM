@@ -18,12 +18,14 @@ import Cookies from 'js-cookie';
 type Props = {
   openAiKey: string;
   elevenLabsKey: string;
+  openRouterKey: string;
   systemPrompt: string;
   chatLog: Message[];
   elevenLabsParam: ElevenLabsParam;
   koeiroParam: KoeiroParam;
   onClickClose: () => void;
   onChangeAiKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChangeOpenRouterKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeElevenLabsKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeElevenLabsVoice: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   onChangeSystemPrompt: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -41,6 +43,7 @@ type Props = {
 export const Settings = ({
   openAiKey,
   elevenLabsKey,
+  openRouterKey,
   chatLog,
   systemPrompt,
   elevenLabsParam,
@@ -48,6 +51,7 @@ export const Settings = ({
   onClickClose,
   onChangeSystemPrompt,
   onChangeAiKey,
+  onChangeOpenRouterKey,
   onChangeElevenLabsKey,
   onChangeElevenLabsVoice,
   onChangeChatLog,
@@ -108,6 +112,23 @@ export const Settings = ({
         <div className="text-text1 max-w-3xl mx-auto px-24 py-64 ">
           <div className="my-24 typography-32 font-bold">Settings</div>
           <div className="my-24">
+            <div className="my-16 typography-20 font-bold">OpenRouter API</div>
+            <input
+              type="text"
+              placeholder="OpenRouter API key"
+              value={openRouterKey}
+              onChange={onChangeOpenRouterKey}
+              className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
+            ></input>
+            <div>
+              Enter your OpenRouter API key for custom access. You can get an API key at the&nbsp;
+              <Link
+                url="https://openrouter.ai/"
+                label="OpenRouter website"
+              />. By default, this app uses its own OpenRouter API key for people to try things out easily, but that may run of credits and need to be refilled.
+            </div>
+          </div>
+          <div className="my-24">
             <div className="my-16 typography-20 font-bold">Eleven Labs API</div>
             <input
               type="text"
@@ -122,9 +143,6 @@ export const Settings = ({
                 url="https://beta.elevenlabs.io/"
                 label="ElevenLabs website"
               />.
-            </div>
-            <div className="my-16">
-              The entered API key is stored in browser local storage and is used to call the ElevenLabs API, so it will not be saved on the server.
             </div>
           </div>
           <div className="my-40">

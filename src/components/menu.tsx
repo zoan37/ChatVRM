@@ -28,10 +28,13 @@ type Props = {
   onChangeBackgroundImage: (value: string) => void;
   onChatMessage: (message: string) => void;
   onTokensUpdate: (tokens: any) => void;
+  onChangeOpenRouterKey: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  openRouterKey: string;
 };
 export const Menu = ({
   openAiKey,
   elevenLabsKey,
+  openRouterKey,
   systemPrompt,
   chatLog,
   elevenLabsParam,
@@ -49,6 +52,7 @@ export const Menu = ({
   onChangeBackgroundImage,
   onChatMessage,
   onTokensUpdate,
+  onChangeOpenRouterKey,
 }: Props) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showChatLog, setShowChatLog] = useState(false);
@@ -164,6 +168,7 @@ export const Menu = ({
         <Settings
           openAiKey={openAiKey}
           elevenLabsKey={elevenLabsKey}
+          openRouterKey={openRouterKey}
           elevenLabsParam={elevenLabsParam}
           chatLog={chatLog}
           systemPrompt={systemPrompt}
@@ -182,6 +187,7 @@ export const Menu = ({
           onChangeBackgroundImage={handleBackgroundImageChange}
           onTokensUpdate={onTokensUpdate}
           onChatMessage={onChatMessage}
+          onChangeOpenRouterKey={onChangeOpenRouterKey}
         />
       )}
       {!showChatLog && assistantMessage && (
