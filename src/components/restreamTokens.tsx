@@ -194,7 +194,8 @@ export const RestreamTokens: React.FC<Props> = ({ onTokensUpdate, onChatMessage 
                     url="https://restream-token-fetcher.vercel.app/"
                     label="Restream Token Fetcher"
                 />. It gives permission for ChatVRM to listen to your chat messages from Restream (currently X and Twitch sources are supported).
-                Once you paste your tokens JSON and click the Start Listening button, ChatVRM will listen to your chat messages.
+                Once you paste your tokens JSON and click the Start Listening button, ChatVRM will listen to your chat messages, and periodically
+                refresh your tokens for you.
             </div>
             <div className="my-16">
                 Paste your Restream authentication tokens JSON here:
