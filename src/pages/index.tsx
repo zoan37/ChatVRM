@@ -19,6 +19,7 @@ import { Meta } from "@/components/meta";
 import { ElevenLabsParam, DEFAULT_ELEVEN_LABS_PARAM } from "@/features/constants/elevenLabsParam";
 import { buildUrl } from "@/utils/buildUrl";
 import { websocketService } from '../services/websocketService';
+import { MessageMiddleOut } from "@/features/messages/messageMiddleOut";
 
 const m_plus_2 = M_PLUS_2({
   variable: "--font-m-plus-2",
@@ -162,34 +163,26 @@ export default function Home() {
    */
   const handleSendChat = useCallback(
     async (text: string) => {
-      // TODO: remove usages of openAiKey in code
-      /*
-      if (!openAiKey) {
-        setAssistantMessage("APIキーが入力されていません");
-        return;
-      }
-      */
-
       const newMessage = text;
-
       if (newMessage == null) return;
 
       setChatProcessing(true);
-      // ユーザーの発言を追加して表示
+      // Add user's message to chat log
       const messageLog: Message[] = [
         ...chatLog,
         { role: "user", content: newMessage },
       ];
       setChatLog(messageLog);
 
-      // Chat GPTへ
-      const messages: Message[] = [
+      // Process messages through MessageMiddleOut
+      const messageProcessor = new MessageMiddleOut();
+      const processedMessages = messageProcessor.process([
         {
           role: "system",
           content: systemPrompt,
         },
         ...messageLog,
-      ];
+      ]);
 
       let localOpenRouterKey = openRouterKey;
       if (!localOpenRouterKey) {
@@ -197,7 +190,7 @@ export default function Home() {
         localOpenRouterKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY!;
       }
 
-      const stream = await getChatResponseStream(messages, openAiKey, localOpenRouterKey).catch(
+      const stream = await getChatResponseStream(processedMessages, openAiKey, localOpenRouterKey).catch(
         (e) => {
           console.error(e);
           return null;
