@@ -2,8 +2,6 @@
 
 <img src="https://github.com/zoan37/ChatVRM/blob/9d50c106cb971e9ef53cfff22e6ea9d75d61fe69/public/ogp-en.png" width="600">
 
-**Discord:** https://discord.gg/7KkS3r5hGK
-
 [This repo was cloned from [ChatVRM-jp](https://github.com/zoan37/ChatVRM-jp), which is a fork of [@pixiv/ChatVRM](https://github.com/pixiv/ChatVRM).]
 
 ChatVRM is a demo application that allows you to easily talk with a 3D character in your browser.
