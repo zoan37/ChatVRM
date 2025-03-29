@@ -5,7 +5,7 @@ import { buildUrl } from "@/utils/buildUrl";
 export default function VrmViewer() {
   const { viewer } = useContext(ViewerContext);
 
-  const AVATAR_SAMPLE_B_VRM_URL = 'https://ensn6revz2uwrc6l.public.blob.vercel-storage.com/AvatarSample_B-IPh7uMREBmAV4Bud1hQ7cOmj5L6FMg.vrm';
+  const AVATAR_SAMPLE_B_VRM_URL = 'https://lavender-defiant-lemur-773.mypinata.cloud/ipfs/bafybeihx4xjb5mphocdq2os63g43pgnpi46ynolpmhln3oycoasywdnl3u';
 
   const canvasRef = useCallback(
     (canvas: HTMLCanvasElement) => {
