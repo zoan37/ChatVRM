@@ -1,34 +1,74 @@
 import { Message } from "../messages/messages";
-import { getWindowAI } from 'window.ai';
+import { buildUrl } from "@/utils/buildUrl";
+import { sseStreamToTextStream } from "./sseStream";
 
-export async function getChatResponse(messages: Message[], apiKey: string) {
-  // function currently not used
-  throw new Error("Not implemented");
+/**
+ * Model used when the user brings their own OpenRouter key. Free by default so
+ * nobody gets a surprise bill. The shared server key's model is chosen
+ * server-side in `pages/api/chat.ts` and can't be set from the browser.
+ */
+const BYOK_MODEL =
+  process.env.NEXT_PUBLIC_OPENROUTER_MODEL || "nvidia/nemotron-3-nano-30b-a3b:free";
 
-  /*
-  if (!apiKey) {
-    throw new Error("Invalid API Key");
+const SITE_URL = "https://chat-vrm-window.vercel.app/";
+const SITE_NAME = "ChatVRM";
+
+/**
+ * Calls the user's own OpenRouter key directly from the browser. Only used for
+ * a key the user typed in themselves — it stays in their browser, and this path
+ * keeps the app working on static builds (GitHub Pages) that have no server.
+ */
+async function fetchWithUserKey(messages: Message[], openRouterKey: string) {
+  return fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${openRouterKey}`,
+      "HTTP-Referer": SITE_URL,
+      "X-Title": SITE_NAME,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: BYOK_MODEL,
+      reasoning: { effort: "low" },
+      messages,
+      temperature: 0.7,
+      max_tokens: 512,
+      stream: true,
+    }),
+  });
+}
+
+/**
+ * Calls our own serverless function, which holds the shared OpenRouter key.
+ * The key never reaches the browser.
+ */
+async function fetchViaServer(messages: Message[]) {
+  // Trailing slash matches `trailingSlash: true` in next.config.js, avoiding a
+  // 308 redirect on every request.
+  return fetch(buildUrl("/api/chat/"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+}
+
+async function readErrorMessage(response: Response): Promise<string> {
+  const fallback = `Chat request failed (${response.status})`;
+  try {
+    const text = await response.text();
+    if (!text) return fallback;
+    try {
+      return JSON.parse(text).error || fallback;
+    } catch {
+      // A static export (e.g. GitHub Pages) has no API routes, so /api/chat
+      // returns an HTML 404 rather than JSON.
+      return response.status === 404
+        ? "No server-side API key is available on this deployment. Enter your own OpenRouter API key in Settings."
+        : fallback;
+    }
+  } catch {
+    return fallback;
   }
-
-  const configuration = new Configuration({
-    apiKey: apiKey,
-  });
-  // ブラウザからAPIを叩くときに発生するエラーを無くすworkaround
-  // https://github.com/openai/openai-node/issues/6#issuecomment-1492814621
-  delete configuration.baseOptions.headers["User-Agent"];
-
-  const openai = new OpenAIApi(configuration);
-
-  const { data } = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages: messages,
-  });
-
-  const [aiRes] = data.choices;
-  const message = aiRes.message?.content || "エラーが発生しました";
-
-  return { message: message };
-  */
 }
 
 export async function getChatResponseStream(
@@ -36,146 +76,13 @@ export async function getChatResponseStream(
   apiKey: string,
   openRouterKey: string
 ) {
-  // TODO: remove usages of apiKey in code
-  /*
-  if (!apiKey) {
-    throw new Error("Invalid API Key");
+  const response = openRouterKey
+    ? await fetchWithUserKey(messages, openRouterKey)
+    : await fetchViaServer(messages);
+
+  if (!response.ok || !response.body) {
+    throw new Error(await readErrorMessage(response));
   }
-  */
 
-  console.log('getChatResponseStream');
-
-  console.log('messages');
-  console.log(messages);
-
-  const stream = new ReadableStream({
-    async start(controller: ReadableStreamDefaultController) {
-      try {
-
-        const OPENROUTER_API_KEY = openRouterKey;
-        const YOUR_SITE_URL = 'https://chat-vrm-window.vercel.app/';
-        const YOUR_SITE_NAME = 'ChatVRM';
-
-        let isStreamed = false;
-        const generation = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-            "HTTP-Referer": `${YOUR_SITE_URL}`, // Optional, for including your app on openrouter.ai rankings.
-            "X-Title": `${YOUR_SITE_NAME}`, // Optional. Shows in rankings on openrouter.ai.
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            // "model": "cohere/command",
-            // "model": "openai/gpt-3.5-turbo",
-            // "model": "cohere/command-r-plus",
-            // "model": "anthropic/claude-3.5-sonnet:beta",
-            // "model": "google/gemini-2.0-flash-exp:free", // removed from OpenRouter
-            "model": "openai/gpt-oss-120b:nitro",
-            // gpt-oss is a reasoning model and its reasoning tokens count against
-            // max_tokens. Keep reasoning effort low and give the reply some
-            // headroom so the spoken answer isn't truncated by the thinking budget.
-            // (reasoning tokens are filtered out of the stream below.)
-            "reasoning": { "effort": "low" },
-            "messages": messages,
-            "temperature": 0.7,
-            "max_tokens": 512,
-            "stream": true,
-          })
-        });
-
-        if (generation.body) {
-          const reader = generation.body.getReader();
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              // console.log('value');
-              // console.log(value);
-
-              // Assuming the stream is text, convert the Uint8Array to a string
-              let chunk = new TextDecoder().decode(value);
-              // Process the chunk here (e.g., append it to the controller for streaming to the client)
-              // console.log(chunk); // Or handle the chunk as needed
-
-              // split the chunk into lines
-              let lines = chunk.split('\n');
-              // console.log('lines');
-              // console.log(lines);
-
-              const SSE_COMMENT = ": OPENROUTER PROCESSING";
-
-
-              // filter out lines that start with SSE_COMMENT
-              lines = lines.filter((line) => !line.trim().startsWith(SSE_COMMENT));
-
-              // filter out lines that end with "data: [DONE]"
-              lines = lines.filter((line) => !line.trim().endsWith("data: [DONE]"));
-
-              // Filter out empty lines and lines that do not start with "data:"
-              const dataLines = lines.filter(line => line.startsWith("data:"));
-
-              // Extract and parse the JSON from each data line
-              const messages = dataLines.map(line => {
-                // Remove the "data: " prefix and parse the JSON
-                const jsonStr = line.substring(5); // "data: ".length == 5
-                return JSON.parse(jsonStr);
-              });
-
-              // console.log('messages');
-              // console.log(messages);
-
-              // loop through messages and enqueue them to the controller
-
-              try {
-                messages.forEach((message) => {
-                  const content = message.choices[0].delta.content;
-
-                  // Skip deltas without content (e.g. role-only or reasoning
-                  // deltas) so we don't enqueue undefined into the stream.
-                  if (content) {
-                    controller.enqueue(content);
-                  }
-                });
-              } catch (error) {
-                // log the messages
-                console.log('error processing messages:');
-                console.log(messages);
-
-                throw error;
-              }
-
-              // Parse the chunk as JSON
-              // const parsedChunk = JSON.parse(chunk);
-              // Access the content
-              // const content = parsedChunk.choices[0].delta.content;
-              // console.log(content); // Use the content as needed
-
-              // enqueue the content to the controller
-              // controller.enqueue(content);
-
-              isStreamed = true;
-            }
-          } catch (error) {
-            console.error('Error reading the stream', error);
-          } finally {
-            reader.releaseLock();
-          }
-        }
-
-        // handle case where streaming is not supported
-        if (!isStreamed) {
-          console.error('Streaming not supported! Need to handle this case.');
-          // controller.enqueue(response[0].message.content);
-        }
-      } catch (error) {
-        controller.error(error);
-      } finally {
-        controller.close();
-      }
-    },
-  });
-
-  return stream;
+  return sseStreamToTextStream(response.body);
 }

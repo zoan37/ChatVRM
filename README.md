@@ -49,12 +49,63 @@ After execution, access the following URL.
 [http://localhost:3000](http://localhost:3000) 
 
 
+## API keys and configuration
+
+The app can get its LLM responses two ways:
+
+1. **The visitor's own OpenRouter key** — entered in Settings, stored in that browser's localStorage, and sent directly from their browser to OpenRouter. Nothing touches your account.
+2. **A shared key you provide** — used when the visitor hasn't entered one. This key lives **only on the server**, in the `/api/chat` serverless function, and is never sent to the browser.
+
+To set up the shared key, copy `.env.example` to `.env.local` for local dev, and set the same variables in Vercel under *Project → Settings → Environment Variables*:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `OPENROUTER_API_KEY` | Shared key, server-side only. Required for the shared path. |
+| `OPENROUTER_MODEL` | Model for the shared key. Must end in `:free` unless `ALLOW_PAID_MODEL=true`. |
+| `ALLOW_PAID_MODEL` | Set to `true` to permit a paid model. Leave unset so a typo can't spend money. |
+| `ALLOWED_ORIGINS` | Optional comma-separated origin allowlist for `/api/chat`. |
+| `SITE_URL` | Optional. Sent as `HTTP-Referer` for OpenRouter's app rankings. |
+
+> **Never prefix an API key with `NEXT_PUBLIC_`.** Next.js inlines those values into the JavaScript bundle served to every visitor, so the key becomes public and can be extracted from devtools. This app previously used `NEXT_PUBLIC_OPENROUTER_API_KEY` and the key was drained as a result.
+
+Recommended hardening for the shared key:
+
+- Use a `:free` model (the default), so requests cost nothing.
+- Create a **dedicated** key at [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) and set a credit limit on it. That limit is the real spend ceiling.
+- Set `ALLOWED_ORIGINS` to your production domain once you're done testing.
+
+`/api/chat` also enforces a fixed model, a 512-token cap, a 24,000-character conversation cap, and a per-IP rate limit (12/min, 200/day). The rate limit is in-memory, so it resets on cold start and isn't shared across regions — treat it as friction against casual abuse, not as the spend ceiling.
+
+### Free models
+
+OpenRouter model IDs ending in `:free` cost $0 per token. The free tier allows 20 requests/minute and 50 requests/day, which rises to 1,000/day once you've purchased $10 of credits at any point. The current list is at [openrouter.ai/models?max_price=0](https://openrouter.ai/models?max_price=0).
+
+For a talking avatar the binding constraint is **time to first token**, since nothing can be spoken until it arrives. Measured on a one-sentence reply (August 2026):
+
+| Model | First token | Notes |
+| --- | --- | --- |
+| `nvidia/nemotron-3-nano-30b-a3b:free` | **0.9s** | Current default. MoE, ~3B active params |
+| `google/gemma-4-31b-it:free` | 5.1s | Better prose, too slow to feel conversational |
+| `openai/gpt-oss-20b:free` | 5.6s | Free relative of the paid `gpt-oss-120b` |
+| `google/gemma-4-26b-a4b-it:free` | 7.5s | |
+| `nvidia/nemotron-3.5-lightning:free` | 60s | **Avoid.** Spent the whole 512-token budget reasoning and emitted its scratchpad as the reply |
+| `liquid/lfm-2.5-2.6b:free` | — | **Avoid.** Streamed empty chunks, then hung |
+
+Reasoning models are a poor fit here: their thinking tokens count against `max_tokens`, delaying speech and risking a truncated reply. `reasoning: { effort: "low" }` is already sent to limit this.
+
+Note that a static build (`npm run export`, used by the GitHub Pages workflow) has no serverless functions, so `/api/chat` won't exist there and visitors must supply their own key.
+
+
 ## How to integrate with livestream
 
 ChatVRM supports reading chat messages from a livestream and generating responses, via the Restream API. Currently, X and Twitch sources are supported. It uses a batching system so that the LLM is called for each batch of messages, not for each message.
 
 Steps (this is mostly in the Settings UI):
-1. Set OpenRouter API key. (The demo uses a free key by default for users to try things out, but it can run out of credits and need a refill).
+1. Set OpenRouter API key. (Optional — leaving it blank uses the deployment's shared server-side key on a free model, which is rate limited. Setting your own key gives you higher limits and your choice of account.)
 2. Set ElevenLabs API key.
 3. Choose your desired ElevenLabs voice.
 4. Choose your desired VRM avatar model.

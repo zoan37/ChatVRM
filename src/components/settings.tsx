@@ -125,7 +125,7 @@ export const Settings = ({
               <Link
                 url="https://openrouter.ai/"
                 label="OpenRouter website"
-              />. By default, this app uses its own OpenRouter API key for people to try things out easily, but that may run of credits and need to be refilled.
+              />. Your key is stored only in this browser and is sent straight to OpenRouter. If you leave this blank, the app uses a shared key on its own server with a free model, which is rate limited.
             </div>
           </div>
           <div className="my-24">
