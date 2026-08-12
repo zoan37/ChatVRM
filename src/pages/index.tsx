@@ -184,18 +184,21 @@ export default function Home() {
         ...messageLog,
       ]);
 
-      let localOpenRouterKey = openRouterKey;
-      if (!localOpenRouterKey) {
-        // fallback to free key for users to try things out
-        localOpenRouterKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY!;
+      // No key here means "use the shared key", which lives server-side in
+      // /api/chat. Never put an API key in a NEXT_PUBLIC_ variable: those are
+      // inlined into the client bundle and readable by every visitor.
+      let stream = null;
+      try {
+        stream = await getChatResponseStream(processedMessages, openAiKey, openRouterKey);
+      } catch (e) {
+        console.error(e);
+        const errorMessage =
+          e instanceof Error ? e.message : "Failed to get a response from the model.";
+        setAssistantMessage(errorMessage);
+        setChatLog([...messageLog, { role: "assistant", content: errorMessage }]);
+        setChatProcessing(false);
+        return;
       }
-
-      const stream = await getChatResponseStream(processedMessages, openAiKey, localOpenRouterKey).catch(
-        (e) => {
-          console.error(e);
-          return null;
-        }
-      );
       if (stream == null) {
         setChatProcessing(false);
         return;
