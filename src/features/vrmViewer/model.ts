@@ -25,7 +25,10 @@ export class Model {
     this._lipSync = new LipSync(new AudioContext());
   }
 
-  public async loadVRM(url: string): Promise<void> {
+  public async loadVRM(
+    url: string,
+    onProgress?: (event: ProgressEvent) => void
+  ): Promise<void> {
     const loader = new GLTFLoader();
     loader.register(
       (parser) =>
@@ -34,7 +37,7 @@ export class Model {
         })
     );
 
-    const gltf = await loader.loadAsync(url);
+    const gltf = await loader.loadAsync(url, onProgress);
 
     const vrm = (this.vrm = gltf.userData.vrm);
     vrm.scene.name = "VRMRoot";

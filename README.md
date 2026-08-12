@@ -100,6 +100,31 @@ Reasoning models are a poor fit here: their thinking tokens count against `max_t
 Note that a static build (`npm run export`, used by the GitHub Pages workflow) has no serverless functions, so `/api/chat` won't exist there and visitors must supply their own key.
 
 
+## The avatar model
+
+The default avatar is served from `public/AvatarSample_B.vrm` on the app's own origin. It used to load from a public IPFS gateway, which gives no availability guarantee and was returning `504`s — leaving the page with no avatar and an uncaught error in the console.
+
+The committed model is an optimized build of the original 20 MB VRoid export, produced by `scripts/optimize-vrm.mjs`:
+
+```bash
+node scripts/optimize-vrm.mjs original.vrm public/AvatarSample_B.vrm \
+  --max 1024 --thumb 256 --trim-material HAIR_06 --trim-above 1.545
+```
+
+| | Original | Committed |
+| --- | --- | --- |
+| File | 20.07 MB | **6.46 MB** |
+| Textures | 12.12 MB | 4.21 MB |
+| Morph targets | 6.14 MB | 0.69 MB |
+
+Two things dominate a VRoid export. **Textures**: the 2048×2048 thumbnail alone was 2.35 MB despite never being rendered in-scene, and one normal map was stored six times. **Morph targets**: 90.3% of the blend-shape deltas are exactly zero, because each expression moves only a few vertices of a whole-body mesh — storing them as glTF sparse accessors cuts them by 89%.
+
+The `--trim-*` flags fix a separate, pre-existing cosmetic bug: four tiny black specks appeared to float in the air above the head. They are the tips of the black ribbon bows (`HAIR_06`), which taper to a point — above y=1.545 those triangles are narrower than a pixel, so the rasterizer can only draw them as scattered dots detached from the bow. Dropping those 64 triangles (0.18% of the model) removes the specks with no visible change to the bows. Only the index buffer shrinks, so vertices, skin weights and morph targets are untouched. This artifact is present in the untouched 20 MB original — it is not caused by the optimization.
+
+The script deliberately does not use a general-purpose glTF optimizer. VRM keeps its data in the `VRMC_vrm` / `VRM` extensions, which reference textures, images and materials by *array index*; tools that reorder or reindex those arrays silently break expressions, spring bones and material settings. This script only rewrites bufferView payloads and appends new bufferViews, so every existing index still resolves. Run `--max 2048` for a losslessly recompressed 9.14 MB build if you'd rather not downscale textures at all.
+
+Requires ImageMagick (`magick`) on PATH.
+
 ## How to integrate with livestream
 
 ChatVRM supports reading chat messages from a livestream and generating responses, via the Restream API. Currently, X and Twitch sources are supported. It uses a batching system so that the LLM is called for each batch of messages, not for each message.

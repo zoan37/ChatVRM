@@ -39,31 +39,55 @@ export class Viewer {
     this._clock.start();
   }
 
-  public loadVrm(url: string) {
+  /**
+   * @param callbacks progress/error hooks so the UI can show what's happening.
+   *   The avatar is several megabytes, and without feedback a slow or failed
+   *   download is indistinguishable from a broken page.
+   */
+  public loadVrm(
+    url: string,
+    callbacks: {
+      onProgress?: (loaded: number, total: number) => void;
+      onLoad?: () => void;
+      onError?: (error: unknown) => void;
+    } = {}
+  ) {
     if (this.model?.vrm) {
       this.unloadVRM();
     }
 
     // gltf and vrm
     this.model = new Model(this._camera || new THREE.Object3D());
-    this.model.loadVRM(url).then(async () => {
-      if (!this.model?.vrm) return;
+    this.model
+      .loadVRM(url, (event) => {
+        callbacks.onProgress?.(event.loaded, event.total);
+      })
+      .then(async () => {
+        if (!this.model?.vrm) return;
 
-      // Disable frustum culling
-      this.model.vrm.scene.traverse((obj) => {
-        obj.frustumCulled = false;
+        // Disable frustum culling
+        this.model.vrm.scene.traverse((obj) => {
+          obj.frustumCulled = false;
+        });
+
+        this._scene.add(this.model.vrm.scene);
+
+        const vrma = await loadVRMAnimation(buildUrl("/idle_loop.vrma"));
+        if (vrma) this.model.loadAnimation(vrma);
+
+        // HACK: アニメーションの原点がずれているので再生後にカメラ位置を調整する
+        requestAnimationFrame(() => {
+          this.resetCamera();
+        });
+
+        callbacks.onLoad?.();
+      })
+      .catch((error) => {
+        // Previously this rejection was unhandled, so a failed avatar download
+        // only showed up as an uncaught error in the console.
+        console.error("Failed to load VRM:", error);
+        callbacks.onError?.(error);
       });
-
-      this._scene.add(this.model.vrm.scene);
-
-      const vrma = await loadVRMAnimation(buildUrl("/idle_loop.vrma"));
-      if (vrma) this.model.loadAnimation(vrma);
-
-      // HACK: アニメーションの原点がずれているので再生後にカメラ位置を調整する
-      requestAnimationFrame(() => {
-        this.resetCamera();
-      });
-    });
   }
 
   public unloadVRM(): void {
