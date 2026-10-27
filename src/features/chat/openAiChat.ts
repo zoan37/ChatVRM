@@ -7,7 +7,11 @@ import { sseStreamToTextStream } from "./sseStream";
  * Free so nobody gets a surprise bill. Kept in step with `MODELS` in
  * `pages/api/chat.ts`, which the browser can't override for the shared key.
  */
-const BYOK_MODELS = ["nvidia/nemotron-3-ultra-550b-a55b:free", "openrouter/free"];
+const BYOK_MODELS = [
+  "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "openrouter/free",
+];
 
 const SITE_URL = "https://chat-vrm-window.vercel.app/";
 const SITE_NAME = "ChatVRM";

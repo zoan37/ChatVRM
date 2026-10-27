@@ -19,7 +19,11 @@ export const config = {
  * up, so it's the last resort; reply quality varies a lot from one to the next.
  * Every entry must be free: the shared key must never be able to spend money.
  */
-const MODELS = ["nvidia/nemotron-3-ultra-550b-a55b:free", "openrouter/free"];
+const MODELS = [
+  "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "openrouter/free",
+];
 
 /** Hard caps so a shared key can't be drained by an oversized request. */
 const MAX_TOKENS = 512;
