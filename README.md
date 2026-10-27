@@ -85,6 +85,9 @@ For a talking avatar the binding constraint is **time to first token**, since no
 
 | Model | First token | Notes |
 | --- | --- | --- |
+| `nvidia/nemotron-3-ultra-550b-a55b:free` | 0.8–1.8s | Current primary (measured October 2026). Often busy, so OpenRouter falls back |
+| `nvidia/nemotron-3.5-super-vl:free` | 1.1–1.5s | Current second choice (October 2026) |
+| `openrouter/free` | 4–17s | Last-resort fallback. Picks any free model, so speed and quality vary |
 | `nvidia/nemotron-3-nano-30b-a3b:free` | **0.9s** | Former default; removed from OpenRouter by October 2026 |
 | `google/gemma-4-31b-it:free` | 5.1s | Better prose, too slow to feel conversational |
 | `openai/gpt-oss-20b:free` | 5.6s | Free relative of the paid `gpt-oss-120b` |
