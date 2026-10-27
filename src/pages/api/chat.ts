@@ -12,15 +12,18 @@ export const config = {
   runtime: "edge",
 };
 
-/** Model used for the shared key. Must be a `:free` slug unless explicitly overridden. */
-const DEFAULT_MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
-
-/** OpenRouter's router that picks among free models. Free, but has no `:free` suffix. */
-const FREE_ROUTER_MODEL = "openrouter/free";
-
-function isFreeModel(model: string): boolean {
-  return model.endsWith(":free") || model === FREE_ROUTER_MODEL;
-}
+/**
+ * Models for the shared key, tried in order. OpenRouter moves on to the next
+ * one when a model errors, is rate-limited or has been taken down, which free
+ * models regularly are. `openrouter/free` routes to whichever free model is
+ * up, so it's the last resort; reply quality varies a lot from one to the next.
+ * Every entry must be free: the shared key must never be able to spend money.
+ */
+const MODELS = [
+  "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "openrouter/free",
+];
 
 /** Hard caps so a shared key can't be drained by an oversized request. */
 const MAX_TOKENS = 512;
@@ -120,16 +123,6 @@ export default async function handler(req: Request): Promise<Response> {
     return errorResponse(403, "Origin not allowed");
   }
 
-  const model = process.env.OPENROUTER_MODEL || DEFAULT_MODEL;
-  // Guard against a typo in the env var quietly switching the shared key onto
-  // a paid model. Opting into paid usage has to be deliberate.
-  if (!isFreeModel(model) && process.env.ALLOW_PAID_MODEL !== "true") {
-    return errorResponse(
-      500,
-      `Refusing to use non-free model "${model}". Set ALLOW_PAID_MODEL=true to allow paid models.`
-    );
-  }
-
   let body: any;
   try {
     body = await req.json();
@@ -180,7 +173,7 @@ export default async function handler(req: Request): Promise<Response> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model,
+      models: MODELS,
       // gpt-oss style reasoning models count reasoning tokens against
       // max_tokens, so keep the effort low and leave room for the reply.
       reasoning: { effort: "low" },
