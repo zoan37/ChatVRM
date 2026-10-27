@@ -15,6 +15,13 @@ export const config = {
 /** Model used for the shared key. Must be a `:free` slug unless explicitly overridden. */
 const DEFAULT_MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
 
+/** OpenRouter's router that picks among free models. Free, but has no `:free` suffix. */
+const FREE_ROUTER_MODEL = "openrouter/free";
+
+function isFreeModel(model: string): boolean {
+  return model.endsWith(":free") || model === FREE_ROUTER_MODEL;
+}
+
 /** Hard caps so a shared key can't be drained by an oversized request. */
 const MAX_TOKENS = 512;
 const MAX_MESSAGES = 60;
@@ -116,7 +123,7 @@ export default async function handler(req: Request): Promise<Response> {
   const model = process.env.OPENROUTER_MODEL || DEFAULT_MODEL;
   // Guard against a typo in the env var quietly switching the shared key onto
   // a paid model. Opting into paid usage has to be deliberate.
-  if (!model.endsWith(":free") && process.env.ALLOW_PAID_MODEL !== "true") {
+  if (!isFreeModel(model) && process.env.ALLOW_PAID_MODEL !== "true") {
     return errorResponse(
       500,
       `Refusing to use non-free model "${model}". Set ALLOW_PAID_MODEL=true to allow paid models.`

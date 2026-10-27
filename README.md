@@ -65,7 +65,7 @@ cp .env.example .env.local
 | Variable | Purpose |
 | --- | --- |
 | `OPENROUTER_API_KEY` | Shared key, server-side only. Required for the shared path. |
-| `OPENROUTER_MODEL` | Model for the shared key. Must end in `:free` unless `ALLOW_PAID_MODEL=true`. |
+| `OPENROUTER_MODEL` | Model for the shared key. Must end in `:free` (or be `openrouter/free`) unless `ALLOW_PAID_MODEL=true`. |
 | `ALLOW_PAID_MODEL` | Set to `true` to permit a paid model. Leave unset so a typo can't spend money. |
 | `ALLOWED_ORIGINS` | Optional comma-separated origin allowlist for `/api/chat`. |
 | `SITE_URL` | Optional. Sent as `HTTP-Referer` for OpenRouter's app rankings. |
