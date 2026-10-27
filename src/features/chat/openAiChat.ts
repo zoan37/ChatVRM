@@ -3,12 +3,11 @@ import { buildUrl } from "@/utils/buildUrl";
 import { sseStreamToTextStream } from "./sseStream";
 
 /**
- * Model used when the user brings their own OpenRouter key. Free by default so
- * nobody gets a surprise bill. The shared server key's model is chosen
- * server-side in `pages/api/chat.ts` and can't be set from the browser.
+ * Models used when the user brings their own OpenRouter key, tried in order.
+ * Free so nobody gets a surprise bill. Kept in step with `MODELS` in
+ * `pages/api/chat.ts`, which the browser can't override for the shared key.
  */
-const BYOK_MODEL =
-  process.env.NEXT_PUBLIC_OPENROUTER_MODEL || "nvidia/nemotron-3-nano-30b-a3b:free";
+const BYOK_MODELS = ["nvidia/nemotron-3-ultra-550b-a55b:free", "openrouter/free"];
 
 const SITE_URL = "https://chat-vrm-window.vercel.app/";
 const SITE_NAME = "ChatVRM";
@@ -28,7 +27,7 @@ async function fetchWithUserKey(messages: Message[], openRouterKey: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: BYOK_MODEL,
+      models: BYOK_MODELS,
       reasoning: { effort: "low" },
       messages,
       temperature: 0.7,

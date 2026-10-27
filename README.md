@@ -65,8 +65,6 @@ cp .env.example .env.local
 | Variable | Purpose |
 | --- | --- |
 | `OPENROUTER_API_KEY` | Shared key, server-side only. Required for the shared path. |
-| `OPENROUTER_MODEL` | Model for the shared key. Must end in `:free` (or be `openrouter/free`) unless `ALLOW_PAID_MODEL=true`. |
-| `ALLOW_PAID_MODEL` | Set to `true` to permit a paid model. Leave unset so a typo can't spend money. |
 | `ALLOWED_ORIGINS` | Optional comma-separated origin allowlist for `/api/chat`. |
 | `SITE_URL` | Optional. Sent as `HTTP-Referer` for OpenRouter's app rankings. |
 
@@ -74,11 +72,10 @@ cp .env.example .env.local
 
 Recommended hardening for the shared key:
 
-- Use a `:free` model (the default), so requests cost nothing.
 - Create a **dedicated** key at [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) and set a credit limit on it. That limit is the real spend ceiling.
 - Set `ALLOWED_ORIGINS` to your production domain once you're done testing.
 
-`/api/chat` also enforces a fixed model, a 512-token cap, a 24,000-character conversation cap, and a per-IP rate limit (12/min, 200/day). The rate limit is in-memory, so it resets on cold start and isn't shared across regions — treat it as friction against casual abuse, not as the spend ceiling.
+`/api/chat` also enforces fixed free models (set in `MODELS` in `src/pages/api/chat.ts`, with `openrouter/free` as the fallback), a 512-token cap, a 24,000-character conversation cap, and a per-IP rate limit (12/min, 200/day). The rate limit is in-memory, so it resets on cold start and isn't shared across regions — treat it as friction against casual abuse, not as the spend ceiling.
 
 ### Free models
 
@@ -88,7 +85,7 @@ For a talking avatar the binding constraint is **time to first token**, since no
 
 | Model | First token | Notes |
 | --- | --- | --- |
-| `nvidia/nemotron-3-nano-30b-a3b:free` | **0.9s** | Current default. MoE, ~3B active params |
+| `nvidia/nemotron-3-nano-30b-a3b:free` | **0.9s** | Former default; removed from OpenRouter by October 2026 |
 | `google/gemma-4-31b-it:free` | 5.1s | Better prose, too slow to feel conversational |
 | `openai/gpt-oss-20b:free` | 5.6s | Free relative of the paid `gpt-oss-120b` |
 | `google/gemma-4-26b-a4b-it:free` | 7.5s | |
